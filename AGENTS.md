@@ -1,6 +1,6 @@
 # Guide for LLMs
 
-This repository contains a Flutter application with iOS, iPadOS, and Android (both phone and tablet) as the only intended target platforms.
+This repository contains a local-first app for bookmarking and notes. It is a Flutter application with iOS, iPadOS, and Android (both phone and tablet) as the only intended target platforms.
 
 The app will be named "Kaya", to the user. The Bundle ID (Apple/iOS) and Package Name (Android) will be `ca.deobald.Kaya`.
 
@@ -105,7 +105,7 @@ The main screen of the application.
 
 **Search:** Put a "search" textbox at the top of the screen. As the user types, the search filters all anga (tiles). Order result tiles from highest to lowest score. See "Search".
 
-**Tiles:** A reverse-chronological (or ranked/scored, when search is active) grid of tiles, 2 or 3 tiles wide, will be visible under the Search bar. It should be 2 tiles wide on smaller phones and 3 tiles wide on larger phones or when any phone is in landscape orientation. On tablets, it should be 4 tiles wide, identical to the `kaya-server` web UI. Clicking any tile (anga) will open the Preview Screen for the corresponding anga/file. Bookmark tiles should display the favicon of the website URL from the corresponding `.url` file. Other files should display their contents on the tile, if possible. Shorter text documents should display in larger text, to avoid excessive whitespace.
+**Tiles:** A reverse-chronological (or ranked/scored, when search is active) grid of tiles, 2 or 3 tiles wide, will be visible under the Search bar. It should be 2 tiles wide on smaller phones and 3 tiles wide on larger phones or when any phone is in landscape orientation. On tablets, it should be 4 tiles wide, identical to the `kaya-server` web UI. Clicking any tile (anga) will open the Preview Screen for the corresponding anga/file. Bookmark tiles should display the favicon from the synced cache (do not fetch favicons directly from websites). Other files should display their contents on the tile, if possible. Shorter text documents should display in larger text, to avoid excessive whitespace.
 
 ### UI: Preview Screen
 
@@ -119,10 +119,10 @@ The Preview Screen should:
   * images and videos should render inline
 * display the original URL, in the case of bookmarks
 * have a "Visit Original Page" button, in the case of bookmarks
-* show the user text boxes to enter Tags or a Note, which will be saved as metadata pointing to the current anga/tile, based on [@adr-0003-metadata.md](./doc/arch/adr-0003-metadata.md)
+* show the user text boxes to enter Tags or a Note, which will be saved as metadata pointing to the current anga/tile, based on [@adr-0003-metadata.md](./doc/arch/adr-0003-metadata.md). Multiple metadata files may reference the same anga; only display the contents from the most recent `.toml` file (though all metadata files are indexed for search).
 * show the user "Share" and "Download" buttons
   * "Share": using the `share_plus` package, open a share sheet and send the file representing this anga (`/kaya/anga/{somefile}`) to the selected application
-  * "Download": download the file representing this anga to the device's regular (non-sandboxed) filesystem, in the standard "Downloads" directory
+  * "Download": download the file representing this anga to the device's filesystem. On Android, use the standard "Downloads" directory. On iOS, use the Files app integration.
 
 ### UI: Add Bookmark/Note Screen
 
@@ -138,9 +138,9 @@ If the user chooses "Account" from the hamburger menu, they are taken to the Acc
 * Email
 * Password
 
-These 3 fields should be saved as the user's preferences, with the `shared_preferences` package. The password should be encrypted at rest.
+These 3 fields should be saved as the user's preferences, with the `shared_preferences` package. The password should be encrypted at rest using `flutter_secure_storage`.
 
-There should be a "Test Connection" button, which confirms for the user that a Basic HTTP Auth connection to one of the server's `GET` API routes can be made successfully.
+There should be a "Test Connection" button, which confirms for the user that a Basic HTTP Auth connection to `/api/v1/:user_email/anga` can be made successfully.
 
 There should be a "Force Sync" button which forces a sync. See "Sync".
 
@@ -173,3 +173,5 @@ When an image, PDF, video, or other file is shared with Kaya, it should be saved
 If the email and password have been set: once per minute, the app should sync the local files (anga, meta, and cache) with the Kaya Server over HTTP as per [@adr-0002-service-sync.md](./doc/arch/adr-0002-service-sync.md). You can follow the example found in [@sync.rb](./bin/sync.rb), but it is intended for a desktop operating system --- instead of `~/.kaya/`, the mobile apps will use the directory returned from `getApplicationSupportDirectory()` + `"/kaya"` as their root.
 
 If the sync does not require any uploads or downloads, it is not logged (to avoid flooding logs with one message every minute). Any time data is sync'd up or down, or if the sync fails for some reason, that is logged. If the sync fails, notify the user with the orange "alert" icon mentioned in "UI: Header".
+
+The app is local-first: it works fully offline. Users can create new angas while offline (to be synced later). When the device comes back online, the app should trigger a sync automatically (if credentials are configured). Webpage caches are only available if synced from the server; the mobile app does not cache webpages itself.
