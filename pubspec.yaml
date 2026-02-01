@@ -1,0 +1,82 @@
+name: kaya
+description: "Kaya - Local-first bookmarking and notes app"
+publish_to: "none"
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.10.4
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # UI
+  cupertino_icons: ^1.0.8
+
+  # State Management
+  flutter_riverpod: ^2.6.1
+  riverpod_annotation: ^2.6.1
+
+  # Data Models
+  freezed_annotation: ^2.4.4
+
+  # Logging
+  logger: ^2.5.0
+
+  # Storage
+  shared_preferences: ^2.3.5
+  path_provider: ^2.1.5
+  flutter_secure_storage: ^9.2.4
+
+  # Share handling
+  receive_sharing_intent: ^1.8.1
+  share_plus: ^10.1.4
+
+  # Search
+  fuzzy_bolt: ^1.0.0
+
+  # PDF
+  flutter_pdfview: ^1.4.0
+  # Note: flutter_pdf_text has platform limitations, using syncfusion_flutter_pdf instead
+  syncfusion_flutter_pdf: ^28.1.36
+
+  # Network
+  http: ^1.2.2
+  connectivity_plus: ^6.1.2
+
+  # Metadata parsing
+  toml: ^0.16.0
+
+  # URL handling
+  url_launcher: ^6.3.1
+
+  # Video
+  video_player: ^2.9.2
+
+  # Routing
+  go_router: ^14.6.3
+
+  # File downloads
+  open_file: ^3.5.10
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  build_runner: ^2.4.14
+  riverpod_generator: ^2.6.3
+  freezed: ^2.5.7
+  flutter_launcher_icons: ^0.14.3
+
+flutter:
+  uses-material-design: true
+  assets:
+    - doc/design/
+
+flutter_launcher_icons:
+  image_path: "doc/design/icon_1024.png"
+  ios: true
+  android: true
+  min_sdk_android: 21
+  adaptive_icon_background: "#f5e6c8"
+  adaptive_icon_foreground: "doc/design/icon_1024.png"
