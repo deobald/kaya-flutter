@@ -163,7 +163,7 @@ class AngaMeta {
 - Log significant events: shares, syncs, errors
 
 ### 2.5 Error Service
-- Track errors and warnings in memory
+- Track errors and warnings in memory (do not persist across app restarts; log file preserves history)
 - Provide list to UI for display
 - Clear mechanism for acknowledged errors
 
@@ -186,7 +186,9 @@ class AngaMeta {
   URL=https://example.com/
   ```
   Filename: `{timestamp}-{sanitized-domain}.url`
-  (Domain only, not full path; periods and special characters become hyphens)
+  - Domain only: exclude paths, query strings, and anchors
+  - Sanitize: replace `.` and special characters with `-`
+  - Example: `https://www.example.com/path?q=1#anchor` → `www-example-com.url`
   
 - **Text (non-URL)**: Create `-note.md` file with verbatim content
   Filename: `{timestamp}-note.md`
@@ -198,6 +200,11 @@ class AngaMeta {
 - Shares work fully offline
 - New angas saved locally immediately
 - Synced to server when connectivity returns
+
+### 3.4 Cold Start Sharing (Android)
+- When app is killed and receives a share intent, Android launches the app with intent data
+- Use `ShareHandlerPlatform.instance.getInitialSharedMedia()` on app init to check for pending shares
+- Note: Some Android ROMs with aggressive battery optimization may prevent app launch; this is a system-level issue affecting all apps and requires user to disable battery optimization if problems occur
 
 ---
 
@@ -239,6 +246,7 @@ class AngaMeta {
 - Use `fuzzy_bolt` with `searchWithTextProcessing`
 - Options: `enableStemming: true`, `removeStopWords: true`
 - Incremental filtering as user types
+- Debounce search input by 100ms for performance with large collections
 
 ### 5.2 Search Corpus
 - Anga filenames
@@ -260,7 +268,7 @@ class AngaMeta {
 - **Bookmarks**: Display cached HTML from `/kaya/cache` if available; otherwise fetch from web for display only (do not cache locally)
 - **PDFs**: Render inline with `flutter_pdfview`
 - **Images**: Display inline
-- **Videos**: Play inline with video player
+- **Videos**: Do not auto-play; require user tap to start. Play with sound by default.
 - **Notes/Text**: Display formatted content
 
 ### 6.2 Bookmark-Specific Features
@@ -334,6 +342,7 @@ class AngaMeta {
 - Upload missing files to server (anga, meta)
 - Download missing files from server (anga, meta, cache)
 - Cache is download-only (mobile app cannot create cache content)
+- **Conflict handling**: If a filename exists both locally and remotely with different content, do not sync that file. Log an error and show alert to user.
 
 ### 10.2 API Endpoints
 ```
@@ -403,20 +412,4 @@ Note: Ignore `/smart` endpoint for now (not implemented on server).
 - Follow Material Design guidelines
 - Support light/dark mode
 
----
 
-## Remaining Open Questions
-
-These questions were not explicitly answered and may need clarification during implementation:
-
-1. **Video preview behavior**: Should videos auto-play in preview, or require user interaction? Should they play with sound by default?
-
-2. **Search performance**: For large collections (thousands of angas), should search be debounced? What delay would be appropriate?
-
-3. **Error persistence**: Should errors persist across app restarts, or clear when the app is closed? Maximum number of errors to retain?
-
-4. **Sync conflict handling**: If the same timestamp filename exists locally and remotely with different content (unlikely but possible due to clock issues), what should happen?
-
-5. **Share handler when app is killed**: On some Android devices, share intents may not wake a killed app properly. Document this limitation?
-
-6. **URL file domain sanitization**: The spec shows domain-only in filenames. Confirm this excludes path and query strings?
