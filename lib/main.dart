@@ -46,10 +46,29 @@ class KayaApp extends ConsumerWidget {
     );
   }
 
+  // GNOME Brand Colors (https://brand.gnome.org/)
+  static const _gnomeBlue = Color(0xFF3584e4);
+  static const _gnomeOrange = Color(0xFFFF7800);
+  static const _gnomePurple = Color(0xFF9141AC);
+  // static const _gnomeGreen = Color(0xFF33D17A); // Available for future use
+  static const _gnomeRed = Color(0xFFE01B24);
+  static const _gnomeGrey = Color(0xFF77767B);
+  static const _gnomeQuiteBlack = Color(0xFF241F31);
+
   ThemeData _buildLightTheme() {
-    final colorScheme = ColorScheme.fromSeed(
-      seedColor: const Color(0xFFd4b678), // Kaya wood color
-      brightness: Brightness.light,
+    final colorScheme = ColorScheme.light(
+      primary: _gnomeBlue,
+      onPrimary: Colors.white,
+      secondary: _gnomePurple,
+      onSecondary: Colors.white,
+      tertiary: _gnomeOrange,
+      onTertiary: Colors.white,
+      error: _gnomeRed,
+      onError: Colors.white,
+      surface: Colors.white,
+      onSurface: _gnomeQuiteBlack,
+      surfaceContainerHighest: const Color(0xFFF6F5F4),
+      outline: _gnomeGrey,
     );
 
     return ThemeData(
@@ -86,6 +105,8 @@ class KayaApp extends ConsumerWidget {
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
+          backgroundColor: colorScheme.primary,
+          foregroundColor: colorScheme.onPrimary,
           minimumSize: const Size(double.infinity, 48),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
@@ -94,19 +115,35 @@ class KayaApp extends ConsumerWidget {
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
+          foregroundColor: colorScheme.primary,
           minimumSize: const Size(double.infinity, 48),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
+          side: BorderSide(color: colorScheme.primary),
         ),
       ),
     );
   }
 
   ThemeData _buildDarkTheme() {
-    final colorScheme = ColorScheme.fromSeed(
-      seedColor: const Color(0xFFd4b678), // Kaya wood color
-      brightness: Brightness.dark,
+    // Dark mode colors (luminance multiplied by 0.85 per GNOME guidelines)
+    const darkSurface = Color(0xFF1E1B26); // Darker than Quite Black
+    const darkSurfaceContainer = Color(0xFF2D2A36);
+
+    final colorScheme = ColorScheme.dark(
+      primary: _gnomeBlue,
+      onPrimary: Colors.white,
+      secondary: _gnomePurple,
+      onSecondary: Colors.white,
+      tertiary: _gnomeOrange,
+      onTertiary: Colors.white,
+      error: _gnomeRed,
+      onError: Colors.white,
+      surface: darkSurface,
+      onSurface: Colors.white,
+      surfaceContainerHighest: darkSurfaceContainer,
+      outline: _gnomeGrey,
     );
 
     return ThemeData(
@@ -143,6 +180,8 @@ class KayaApp extends ConsumerWidget {
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
+          backgroundColor: colorScheme.primary,
+          foregroundColor: colorScheme.onPrimary,
           minimumSize: const Size(double.infinity, 48),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
@@ -151,10 +190,12 @@ class KayaApp extends ConsumerWidget {
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
+          foregroundColor: colorScheme.primary,
           minimumSize: const Size(double.infinity, 48),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
+          side: BorderSide(color: colorScheme.primary),
         ),
       ),
     );
