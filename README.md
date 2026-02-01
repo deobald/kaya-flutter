@@ -1,2 +1,3 @@
 # kaya-flutter
-Kaya as iOS and Android apps
+
+iOS and Android apps for Kaya, the local-first bookmarking engine.
