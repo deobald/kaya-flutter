@@ -3,7 +3,7 @@ enum AngaType {
   /// A bookmark stored as a .url file
   bookmark,
 
-  /// A text note stored as a .md file with -note.md suffix
+  /// A text note stored as a .md file (notes, quotes, snippets, etc.)
   note,
 
   /// Any other file type (images, PDFs, videos, etc.)
@@ -31,7 +31,8 @@ AngaType angaTypeFromFilename(String filename) {
     return AngaType.bookmark;
   }
 
-  if (lower.endsWith('-note.md')) {
+  // Treat all markdown files as notes (includes -note.md, -quote.md, etc.)
+  if (lower.endsWith('.md')) {
     return AngaType.note;
   }
 

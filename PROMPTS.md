@@ -11,3 +11,48 @@ Read [@AGENTS.md](file:///Users/steven/work/deobald/kaya-flutter/AGENTS.md) and 
 Follow the [GNOME Brand Guidelines](https://brand.gnome.org/) for the application's color scheme, though not for fonts.
 
 Bug: The primary buttons are now hard to see. "Save", "Test Connection", and "Force Sync" do not contrast with the background.
+
+## Tiles should always preview contents, when possible
+
+Tiles for images (SVG, PNG, and so on) should render the image on the surface of the tile, in addition to rendering it on the Preview screen. Tiles for notes and quotes (`.md`) should render the text of the note on the surface of the tile, in addition to rendering the text on the Preview screen.
+
+## Some Markdown tiles don't render inline
+
+There is one markdown file that isn't rendering inline. It's a `-quote.md` file in the development environment with the name `2026-01-31T072529-quote.md`. A screenshot of it can be seen at [~/Downloads/markdown-rendering-incorrectly.jpeg](~/Downloads/markdown-rendering-incorrectly.jpeg)
+
+This markdown file is a bit large. If that's the reason it isn't being rendered directly, a clip from the beginning of the file should be rendered with an ellipsis ("...") to indicate that not the entire file is shown on the tile.
+
+## Connection Error when server offline
+
+The Error/Warnings alert in the header is showing a lot of "sync failed" errors because the server is not running. When the periodic sync encounters a connection error, instead of adding errors to the Error/Warning alert, let's use a passive notification.
+
+There should be a "cloud" icon always visible beside the "plus" icon. When connections are successful, use the Material "Cloud Done" icon. When connections are failing due to a network error or the server being unreachable, use the Material "Cloud Off" icon. I don't believe there is an equivalent Cupertino Icon (a cloud AND a cloud with a line through it), but if there is, please use it.
+
+## Pending: Warning on `flutter run`
+
+There is a red "Target native_assets required define SdkRoot but it was not provided" warning when using `flutter run`:
+
+```
+% flutter run -d 00008030-000C64291E3B802E
+Launching lib/main.dart on Steven’s iPhone in debug mode...
+Automatically signing iOS for device deployment using specified development team in Xcode project: Z8C46829M8
+Running Xcode build...
+Xcode build done.                                           20.7s
+You may be prompted to give access to control Xcode. Flutter uses Xcode to run your app. If access is not allowed, you can change this through
+your Settings > Privacy & Security > Automation.
+Installing and launching...                                        24.5s
+Target native_assets required define SdkRoot but it was not provided
+Syncing files to device Steven’s iPhone...                          95ms
+
+Flutter run key commands.
+r Hot reload. 🔥🔥🔥
+R Hot restart.
+h List all available interactive commands.
+d Detach (terminate "flutter run" but leave application running).
+c Clear the screen
+q Quit (terminate the application on the device).
+
+A Dart VM Service on Steven’s iPhone is available at: http://127.0.0.1:52485/91r4qpeNe5w=/
+The Flutter DevTools debugger and profiler on Steven’s iPhone is available at:
+http://127.0.0.1:52485/91r4qpeNe5w=/devtools/?uri=ws://127.0.0.1:52485/91r4qpeNe5w=/ws
+```

@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:kaya/features/anga/models/anga.dart';
 import 'package:kaya/features/anga/models/anga_type.dart';
 import 'package:kaya/features/anga/services/file_storage_service.dart';
@@ -118,6 +119,20 @@ class AngaTile extends ConsumerWidget {
   }
 
   Widget _buildFileContent(BuildContext context) {
+    // Handle SVG files separately
+    if (anga.extension == 'svg') {
+      return Container(
+        color: Theme.of(context).colorScheme.surfaceContainerHighest,
+        padding: const EdgeInsets.all(8),
+        child: SvgPicture.file(
+          File(anga.path),
+          fit: BoxFit.contain,
+          placeholderBuilder: (context) => _buildFileIcon(context),
+        ),
+      );
+    }
+
+    // Handle raster images (PNG, JPG, etc.)
     if (anga.isImage) {
       return Image.file(
         File(anga.path),
@@ -126,6 +141,7 @@ class AngaTile extends ConsumerWidget {
       );
     }
 
+    // Handle video files with play icon overlay
     if (anga.isVideo) {
       return Stack(
         alignment: Alignment.center,
