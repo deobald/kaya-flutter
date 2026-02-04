@@ -24,11 +24,15 @@ This markdown file is a bit large. If that's the reason it isn't being rendered 
 
 ## Connection Error when server offline
 
-The Error/Warnings alert in the header is showing a lot of "sync failed" errors because the server is not running. When the periodic sync encounters a connection error, instead of adding errors to the Error/Warning alert, let's use a passive notification.
+The Error/Warnings alert in the header is showing a lot of "sync failed" errors because the server is not running. When the periodic sync encounters a connection error, instead of stacking up a lot of errors to the Error/Warning alert, let's use a passive notification.
 
-There should be a "cloud" icon always visible beside the "plus" icon. When connections are successful, use the Material "Cloud Done" icon. When connections are failing due to a network error or the server being unreachable, use the Material "Cloud Off" icon. I don't believe there is an equivalent Cupertino Icon (a cloud AND a cloud with a line through it), but if there is, please use it.
+Add a "cloud" icon that's always visible immediately to the left of the "plus" icon (but to the right of the alert icon, if it's visible). When connections are successful, use the Material "Cloud Done" icon. When connections are failing due to a network error or the server being unreachable, use the Material "Cloud Off" icon. I don't believe there is an equivalent Cupertino Icon (a cloud AND a cloud with a line through it), but if there is, please use it.
 
-## Pending: Warning on `flutter run`
+---
+
+The cloud icons are showing up, but when the app can't reach the service, it's still getting "Anga sync failed: ClientException with SocketException: Operation timed out (OS Error: Operation timed out, errno = 60)", and the same for Meta sync and Cache sync. This failure should not be an error, since the server is unreachable. This should also result in a "Cloud Off" icon. It should add errors to the log but should not display the error alert.
+
+## Warning on `flutter run`
 
 There is a red "Target native_assets required define SdkRoot but it was not provided" warning when using `flutter run`:
 

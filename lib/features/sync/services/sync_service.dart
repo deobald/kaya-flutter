@@ -22,6 +22,7 @@ class SyncResult {
   final int metaUploaded;
   final int cacheDownloaded;
   final List<String> errors;
+  final bool isConnectionError;
 
   SyncResult({
     this.angaDownloaded = 0,
@@ -30,6 +31,7 @@ class SyncResult {
     this.metaUploaded = 0,
     this.cacheDownloaded = 0,
     this.errors = const [],
+    this.isConnectionError = false,
   });
 
   bool get hasChanges =>
@@ -57,6 +59,7 @@ class SyncService {
   );
 
   /// Performs a full sync with the server.
+  /// Connection errors are tracked separately and don't get added to the error service.
   Future<SyncResult> sync() async {
     final settings = await _accountRepo.loadSettings();
     if (!settings.canSync) {
@@ -71,6 +74,7 @@ class SyncService {
 
     final baseUrl = settings.serverUrl;
     final errors = <String>[];
+    var isConnectionError = false;
 
     var angaDownloaded = 0;
     var angaUploaded = 0;
@@ -80,24 +84,45 @@ class SyncService {
 
     try {
       // Sync anga files
-      final angaResult =
-          await _syncAngas(baseUrl, email, password);
+      final angaResult = await _syncAngas(baseUrl, email, password);
       angaDownloaded = angaResult.downloaded;
       angaUploaded = angaResult.uploaded;
       errors.addAll(angaResult.errors);
+      if (angaResult.isConnectionError) {
+        isConnectionError = true;
+        _logger?.w('Sync connection error during anga sync');
+      }
 
-      // Sync meta files
-      final metaResult =
-          await _syncMeta(baseUrl, email, password);
-      metaDownloaded = metaResult.downloaded;
-      metaUploaded = metaResult.uploaded;
-      errors.addAll(metaResult.errors);
+      // Sync meta files (skip if already got connection error)
+      if (!isConnectionError) {
+        final metaResult = await _syncMeta(baseUrl, email, password);
+        metaDownloaded = metaResult.downloaded;
+        metaUploaded = metaResult.uploaded;
+        errors.addAll(metaResult.errors);
+        if (metaResult.isConnectionError) {
+          isConnectionError = true;
+          _logger?.w('Sync connection error during meta sync');
+        }
+      }
 
-      // Sync cache (download only)
-      final cacheResult =
-          await _syncCache(baseUrl, email, password);
-      cacheDownloaded = cacheResult.downloaded;
-      errors.addAll(cacheResult.errors);
+      // Sync cache (download only, skip if already got connection error)
+      if (!isConnectionError) {
+        final cacheResult = await _syncCache(baseUrl, email, password);
+        cacheDownloaded = cacheResult.downloaded;
+        errors.addAll(cacheResult.errors);
+        if (cacheResult.isConnectionError) {
+          isConnectionError = true;
+          _logger?.w('Sync connection error during cache sync');
+        }
+      }
+    } on SocketException catch (e) {
+      // Connection error - server unreachable
+      isConnectionError = true;
+      _logger?.w('Sync connection error: $e');
+    } on http.ClientException catch (e) {
+      // HTTP client error - likely connection issue
+      isConnectionError = true;
+      _logger?.w('Sync connection error: $e');
     } catch (e) {
       errors.add('Sync failed: $e');
       _logger?.e('Sync failed', e);
@@ -110,16 +135,20 @@ class SyncService {
       metaUploaded: metaUploaded,
       cacheDownloaded: cacheDownloaded,
       errors: errors,
+      isConnectionError: isConnectionError,
     );
 
     // Log only if there were changes or errors
     if (result.hasChanges) {
       _logger?.i(
-          'Sync complete: ${angaDownloaded + metaDownloaded + cacheDownloaded} downloaded, '
-          '${angaUploaded + metaUploaded} uploaded');
+        'Sync complete: ${angaDownloaded + metaDownloaded + cacheDownloaded} downloaded, '
+        '${angaUploaded + metaUploaded} uploaded',
+      );
     }
 
-    if (result.hasErrors) {
+    // Only add non-connection errors to the error service
+    // Connection errors are shown passively via the cloud icon
+    if (result.hasErrors && !result.isConnectionError) {
       for (final error in errors) {
         _errorService.addError(error);
       }
@@ -189,6 +218,10 @@ class SyncService {
             _logger?.i('[ANGA DOWNLOAD] $filename');
           }
         } catch (e) {
+          if (_isConnectionError(e)) {
+            result.isConnectionError = true;
+            return result;
+          }
           result.errors.add('Failed to download $filename: $e');
         }
       }
@@ -218,13 +251,22 @@ class SyncService {
             _logger?.w('[ANGA SKIP] $filename (already exists on server)');
           } else {
             result.errors.add(
-                'Failed to upload $filename: ${response.statusCode}');
+              'Failed to upload $filename: ${response.statusCode}',
+            );
           }
         } catch (e) {
+          if (_isConnectionError(e)) {
+            result.isConnectionError = true;
+            return result;
+          }
           result.errors.add('Failed to upload $filename: $e');
         }
       }
     } catch (e) {
+      if (_isConnectionError(e)) {
+        result.isConnectionError = true;
+        return result;
+      }
       result.errors.add('Anga sync failed: $e');
     }
 
@@ -269,6 +311,10 @@ class SyncService {
             _logger?.i('[META DOWNLOAD] $filename');
           }
         } catch (e) {
+          if (_isConnectionError(e)) {
+            result.isConnectionError = true;
+            return result;
+          }
           result.errors.add('Failed to download meta $filename: $e');
         }
       }
@@ -296,13 +342,22 @@ class SyncService {
             _logger?.w('[META SKIP] $filename (already exists on server)');
           } else {
             result.errors.add(
-                'Failed to upload meta $filename: ${response.statusCode}');
+              'Failed to upload meta $filename: ${response.statusCode}',
+            );
           }
         } catch (e) {
+          if (_isConnectionError(e)) {
+            result.isConnectionError = true;
+            return result;
+          }
           result.errors.add('Failed to upload meta $filename: $e');
         }
       }
     } catch (e) {
+      if (_isConnectionError(e)) {
+        result.isConnectionError = true;
+        return result;
+      }
       result.errors.add('Meta sync failed: $e');
     }
 
@@ -347,13 +402,21 @@ class SyncService {
               );
               if (response.statusCode == 200) {
                 await _storage.saveCacheFile(
-                    bookmark, filename, response.bodyBytes);
+                  bookmark,
+                  filename,
+                  response.bodyBytes,
+                );
                 result.downloaded++;
                 _logger?.i('[CACHE DOWNLOAD] $bookmark/$filename');
               }
             } catch (e) {
-              result.errors
-                  .add('Failed to download cache $bookmark/$filename: $e');
+              if (_isConnectionError(e)) {
+                result.isConnectionError = true;
+                return result;
+              }
+              result.errors.add(
+                'Failed to download cache $bookmark/$filename: $e',
+              );
             }
           }
         } else {
@@ -364,8 +427,7 @@ class SyncService {
             password,
           );
           final localFiles = await _storage.listCacheFiles(bookmark);
-          final toDownload =
-              serverFiles.where((f) => !localFiles.contains(f));
+          final toDownload = serverFiles.where((f) => !localFiles.contains(f));
 
           for (final filename in toDownload) {
             try {
@@ -377,18 +439,30 @@ class SyncService {
               );
               if (response.statusCode == 200) {
                 await _storage.saveCacheFile(
-                    bookmark, filename, response.bodyBytes);
+                  bookmark,
+                  filename,
+                  response.bodyBytes,
+                );
                 result.downloaded++;
                 _logger?.i('[CACHE DOWNLOAD] $bookmark/$filename');
               }
             } catch (e) {
-              result.errors
-                  .add('Failed to download cache $bookmark/$filename: $e');
+              if (_isConnectionError(e)) {
+                result.isConnectionError = true;
+                return result;
+              }
+              result.errors.add(
+                'Failed to download cache $bookmark/$filename: $e',
+              );
             }
           }
         }
       }
     } catch (e) {
+      if (_isConnectionError(e)) {
+        result.isConnectionError = true;
+        return result;
+      }
       result.errors.add('Cache sync failed: $e');
     }
 
@@ -443,11 +517,9 @@ class SyncService {
     final request = http.MultipartRequest('POST', uri);
     request.headers['Authorization'] =
         'Basic ${base64Encode(utf8.encode('$email:$password'))}';
-    request.files.add(http.MultipartFile.fromBytes(
-      'file',
-      bytes,
-      filename: filename,
-    ));
+    request.files.add(
+      http.MultipartFile.fromBytes('file', bytes, filename: filename),
+    );
 
     final streamedResponse = await request.send();
     return await http.Response.fromStream(streamedResponse);
@@ -491,6 +563,17 @@ class _SyncDirResult {
   int downloaded = 0;
   int uploaded = 0;
   final List<String> errors = [];
+  bool isConnectionError = false;
+}
+
+/// Checks if an exception is a connection-related error.
+bool _isConnectionError(Object e) {
+  if (e is SocketException) return true;
+  if (e is http.ClientException) {
+    // ClientException wrapping a SocketException
+    return e.toString().contains('SocketException');
+  }
+  return false;
 }
 
 @Riverpod(keepAlive: true)
@@ -504,6 +587,43 @@ Future<SyncService> syncService(Ref ref) async {
 
 /// State for sync status
 enum SyncStatus { idle, syncing, error }
+
+/// State for server connection status
+enum SyncConnectionStatus {
+  /// No credentials configured
+  notConfigured,
+
+  /// Last sync connected successfully
+  connected,
+
+  /// Last sync failed due to connection error
+  disconnected,
+}
+
+/// Provider for tracking connection status separately from sync status.
+@Riverpod(keepAlive: true)
+class SyncConnectionStatusNotifier extends _$SyncConnectionStatusNotifier {
+  @override
+  SyncConnectionStatus build() => SyncConnectionStatus.notConfigured;
+
+  void setConnected() {
+    state = SyncConnectionStatus.connected;
+  }
+
+  void setDisconnected() {
+    state = SyncConnectionStatus.disconnected;
+  }
+
+  void setNotConfigured() {
+    state = SyncConnectionStatus.notConfigured;
+  }
+}
+
+/// Convenience provider for reading connection status.
+@riverpod
+SyncConnectionStatus syncConnectionStatus(Ref ref) {
+  return ref.watch(syncConnectionStatusNotifierProvider);
+}
 
 /// Notifier for managing sync state and scheduling.
 @Riverpod(keepAlive: true)
@@ -543,9 +663,13 @@ class SyncController extends _$SyncController {
     final connectivity = ref.read(connectivityServiceProvider);
     if (!connectivity.isOnline) return;
 
-    final settings =
-        await ref.read(accountSettingsNotifierProvider.future);
-    if (!settings.canSync) return;
+    final settings = await ref.read(accountSettingsNotifierProvider.future);
+    if (!settings.canSync) {
+      ref
+          .read(syncConnectionStatusNotifierProvider.notifier)
+          .setNotConfigured();
+      return;
+    }
 
     await sync();
   }
@@ -554,14 +678,25 @@ class SyncController extends _$SyncController {
   Future<SyncResult> sync() async {
     state = SyncStatus.syncing;
 
+    final connectionNotifier = ref.read(
+      syncConnectionStatusNotifierProvider.notifier,
+    );
+
     try {
       final service = await ref.read(syncServiceProvider.future);
       final result = await service.sync();
 
-      if (result.hasErrors) {
-        state = SyncStatus.error;
+      // Update connection status
+      if (result.isConnectionError) {
+        connectionNotifier.setDisconnected();
+        state = SyncStatus.idle; // Don't show error state for connection issues
       } else {
-        state = SyncStatus.idle;
+        connectionNotifier.setConnected();
+        if (result.hasErrors) {
+          state = SyncStatus.error;
+        } else {
+          state = SyncStatus.idle;
+        }
       }
 
       // Refresh angas if anything was downloaded
@@ -571,8 +706,10 @@ class SyncController extends _$SyncController {
 
       return result;
     } catch (e) {
-      state = SyncStatus.error;
-      rethrow;
+      // Unexpected error - likely connection issue
+      connectionNotifier.setDisconnected();
+      state = SyncStatus.idle;
+      return SyncResult(isConnectionError: true);
     }
   }
 

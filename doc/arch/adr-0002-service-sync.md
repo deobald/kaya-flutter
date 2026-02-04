@@ -12,21 +12,27 @@ Kaya Server (https://github.com/deobald/kaya-server) will run as an always-up ce
 
 Local files in Kaya sync to the server symmetrically. Index routes simply list the files available under them, as though they were directory listings.
 
-**Data Model to API Mapping:**
+### Mapping for Client Data Model <=> API Routes:
 
-(On mobile apps like this one, files will be stored in a `/kaya` directory inside the `getApplicationSupportDirectory()` root from `path_provider`.)
+**Immutable, User-Generated Data**
 
-* `/kaya/anga/` <=> `/api/v1/:user_email/anga`
-* `/kaya/anga/{filename}` <=> `/api/v1/:user_email/anga/:filename`
-* `/kaya/meta/` <=> `/api/v1/:user_email/meta`
-* `/kaya/meta/{tomlfile}` <=> `/api/v1/:user_email/meta/:tomlfile`
-* `/kaya/cache/` <=> `/api/v1/:user_email/cache`
-* `/kaya/cache/{bookmark}` <=> `/api/v1/:user_email/cache/:bookmark`
-* `/kaya/cache/{bookmark}/{filename}` <=> `/api/v1/:user_email/cache/:bookmark/:filename`
-* `/kaya/smart/` <=> `/api/v1/:user_email/smart`
-* `/kaya/smart/{filename}` <=> `/api/v1/:user_email/cache/:filename`
+* `~/.kaya/anga/` <=> `/api/v1/:user_email/anga`
+* `~/.kaya/anga/{filename}` <=> `/api/v1/:user_email/anga/:filename`
+* `~/.kaya/meta/` <=> `/api/v1/:user_email/meta`
+* `~/.kaya/meta/{tomlfile}` <=> `/api/v1/:user_email/meta/:tomlfile`
 
-Users can run their own Kaya Server, or there will be one primary instance they can connect to.
+**Ephemeral, Auto-Generated Data**
+
+* `~/.kaya/words/` <=> `/api/v1/:user_email/words`
+* `~/.kaya/words/{anga}` <=> `/api/v1/:user_email/words/:anga`
+* `~/.kaya/words/{anga}/{filename}` <=> `/api/v1/:user_email/words/:anga/:filename`
+* `~/.kaya/cache/` <=> `/api/v1/:user_email/cache`
+* `~/.kaya/cache/{bookmark}` <=> `/api/v1/:user_email/cache/:bookmark`
+* `~/.kaya/cache/{bookmark}/{filename}` <=> `/api/v1/:user_email/cache/:bookmark/:filename`
+* `~/.kaya/smart/` <=> `/api/v1/:user_email/smart`
+* `~/.kaya/smart/{filename}` <=> `/api/v1/:user_email/cache/:filename`
+
+Users can self-host their own Kaya Server, or there will be one primary instance they can connect to.
 
 ## Status
 

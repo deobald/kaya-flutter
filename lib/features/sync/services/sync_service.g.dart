@@ -23,7 +23,50 @@ final syncServiceProvider = FutureProvider<SyncService>.internal(
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
 typedef SyncServiceRef = FutureProviderRef<SyncService>;
-String _$syncControllerHash() => r'74e9fabd4ebf1a58e54e4756cf32cbb1076e7619';
+String _$syncConnectionStatusHash() =>
+    r'14aaf5d31ca73e2393ff127efa5b0c2dc7d94d03';
+
+/// Convenience provider for reading connection status.
+///
+/// Copied from [syncConnectionStatus].
+@ProviderFor(syncConnectionStatus)
+final syncConnectionStatusProvider =
+    AutoDisposeProvider<SyncConnectionStatus>.internal(
+      syncConnectionStatus,
+      name: r'syncConnectionStatusProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$syncConnectionStatusHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+typedef SyncConnectionStatusRef = AutoDisposeProviderRef<SyncConnectionStatus>;
+String _$syncConnectionStatusNotifierHash() =>
+    r'8f5d90fa5c6f4d06f60ea868e969b097cc52f801';
+
+/// Provider for tracking connection status separately from sync status.
+///
+/// Copied from [SyncConnectionStatusNotifier].
+@ProviderFor(SyncConnectionStatusNotifier)
+final syncConnectionStatusNotifierProvider =
+    NotifierProvider<
+      SyncConnectionStatusNotifier,
+      SyncConnectionStatus
+    >.internal(
+      SyncConnectionStatusNotifier.new,
+      name: r'syncConnectionStatusNotifierProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$syncConnectionStatusNotifierHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
+
+typedef _$SyncConnectionStatusNotifier = Notifier<SyncConnectionStatus>;
+String _$syncControllerHash() => r'14d71da80d3d8f7b7da89b4f64e3af783ac998a2';
 
 /// Notifier for managing sync state and scheduling.
 ///

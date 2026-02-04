@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:kaya/core/widgets/cloud_status_icon.dart';
 import 'package:kaya/core/widgets/error_alert_icon.dart';
 import 'package:kaya/features/account/screens/account_screen.dart';
 import 'package:kaya/features/anga/services/anga_repository.dart';
@@ -57,6 +58,7 @@ class _EverythingScreenState extends ConsumerState<EverythingScreen> {
         title: const Text('Kaya'),
         actions: [
           const ErrorAlertIcon(),
+          const CloudStatusIcon(),
           IconButton(
             icon: const Icon(Icons.add),
             onPressed: () => context.push(AddScreen.routePath),
@@ -68,9 +70,7 @@ class _EverythingScreenState extends ConsumerState<EverythingScreen> {
       body: Column(
         children: [
           _buildSearchBar(),
-          Expanded(
-            child: _buildGrid(),
-          ),
+          Expanded(child: _buildGrid()),
         ],
       ),
     );
@@ -92,17 +92,15 @@ class _EverythingScreenState extends ConsumerState<EverythingScreen> {
                   Text(
                     'Kaya',
                     style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                          color:
-                              Theme.of(context).colorScheme.onPrimaryContainer,
-                        ),
+                      color: Theme.of(context).colorScheme.onPrimaryContainer,
+                    ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     'Local-first bookmarks & notes',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color:
-                              Theme.of(context).colorScheme.onPrimaryContainer,
-                        ),
+                      color: Theme.of(context).colorScheme.onPrimaryContainer,
+                    ),
                   ),
                 ],
               ),
@@ -150,9 +148,7 @@ class _EverythingScreenState extends ConsumerState<EverythingScreen> {
                   tooltip: 'Clear search',
                 )
               : null,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
           filled: true,
         ),
       ),
@@ -196,9 +192,7 @@ class _EverythingScreenState extends ConsumerState<EverythingScreen> {
         );
       },
       loading: () => const Center(
-        child: CircularProgressIndicator(
-          semanticsLabel: 'Loading content',
-        ),
+        child: CircularProgressIndicator(semanticsLabel: 'Loading content'),
       ),
       error: (error, stack) => Center(
         child: Column(
@@ -272,8 +266,8 @@ class _EverythingScreenState extends ConsumerState<EverythingScreen> {
           Text(
             'Share content to Kaya or tap + to add',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
           ),
         ],
       ),
