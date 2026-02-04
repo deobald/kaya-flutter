@@ -47,30 +47,28 @@ void main() {
         },
       );
 
-      test(
-        'returns words for PDF with .pdf extension in directory name',
-        () async {
-          // Same test but for PDF files
-          const angaFilename = '2025-01-01T120000-GNOME Regento NDA.pdf';
-          const wordsContent =
-              'AGREEMENT collectively the Parties notwithstanding any other provision';
+      test('returns words for PDF with URL-encoded filename', () async {
+        // Filenames are stored URL-encoded on disk to match server symmetry
+        // "GNOME Regento NDA.pdf" becomes "GNOME%20Regento%20NDA.pdf"
+        const angaFilename = '2025-01-01T120000-GNOME%20Regento%20NDA.pdf';
+        const wordsContent =
+            'AGREEMENT collectively the Parties notwithstanding any other provision';
 
-          // Create words directory with FULL filename (including .pdf extension)
-          final wordsDir = Directory('${service.wordsPath}/$angaFilename');
-          await wordsDir.create(recursive: true);
-          await File(
-            '${wordsDir.path}/extracted.txt',
-          ).writeAsString(wordsContent);
+        // Create words directory with URL-encoded filename
+        final wordsDir = Directory('${service.wordsPath}/$angaFilename');
+        await wordsDir.create(recursive: true);
+        await File(
+          '${wordsDir.path}/extracted.txt',
+        ).writeAsString(wordsContent);
 
-          // getWordsText should find it
-          final result = await service.getWordsText(angaFilename);
+        // getWordsText should find it using the URL-encoded filename
+        final result = await service.getWordsText(angaFilename);
 
-          expect(result, isNotNull);
-          expect(result, contains('collectively'));
-          expect(result, contains('notwithstanding'));
-          expect(result, contains('AGREEMENT'));
-        },
-      );
+        expect(result, isNotNull);
+        expect(result, contains('collectively'));
+        expect(result, contains('notwithstanding'));
+        expect(result, contains('AGREEMENT'));
+      });
 
       test('returns null when no words directory exists', () async {
         const angaFilename = '2026-01-27T171207-nonexistent.url';

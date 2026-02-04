@@ -88,16 +88,15 @@ class Anga with _$Anga {
     }
   }
 
-  /// Extracts the descriptor portion from the filename.
+  /// Extracts the descriptor portion from the filename for display.
+  /// URL-decodes the result since filenames are stored URL-encoded on disk.
+  /// Keeps the file extension intact.
   String _extractDescriptor() {
-    // Remove timestamp prefix and extension
-    final withoutExt = filename.contains('.')
-        ? filename.substring(0, filename.lastIndexOf('.'))
-        : filename;
-
     // Remove timestamp prefix (YYYY-MM-DDTHHMMSS- or YYYY-MM-DDTHHMMSS_SSSSSSSSS-)
     final timestampPattern = RegExp(r'^\d{4}-\d{2}-\d{2}T\d{6}(_\d{9})?-');
-    return withoutExt.replaceFirst(timestampPattern, '');
+    final descriptor = filename.replaceFirst(timestampPattern, '');
+    // URL-decode for display (filenames are stored URL-encoded on disk)
+    return Uri.decodeComponent(descriptor);
   }
 
   /// Gets the file extension.
@@ -147,10 +146,11 @@ String generateNoteFilename([DateTime? timestamp]) {
 }
 
 /// Generates a file filename from an original filename.
+/// URL-encodes the filename to ensure no URL-illegal characters are stored on disk.
 String generateFileFilename(String originalFilename, [DateTime? timestamp]) {
   final ts = DateTimeUtils.generateTimestamp(timestamp);
-  final sanitized = _sanitizeFilename(originalFilename);
-  return '$ts-$sanitized';
+  final encoded = _urlEncodeFilename(originalFilename);
+  return '$ts-$encoded';
 }
 
 /// Sanitizes a domain for use in a filename.
@@ -172,17 +172,13 @@ String _sanitizeDomain(String urlString) {
   }
 }
 
-/// Sanitizes a filename for use in Kaya.
-String _sanitizeFilename(String filename) {
-  // Replace problematic characters
-  var sanitized = filename.replaceAll(RegExp(r'[^\w\-.]'), '-');
-  // Remove multiple consecutive hyphens
-  sanitized = sanitized.replaceAll(RegExp(r'-+'), '-');
-  // Remove leading/trailing hyphens (but keep extension dot)
-  if (sanitized.startsWith('-')) {
-    sanitized = sanitized.substring(1);
-  }
-  return sanitized.isNotEmpty ? sanitized : 'file';
+/// URL-encodes a filename for storage on disk.
+/// This ensures perfect symmetry with the server's filesystem layout.
+/// Only encodes characters that are not safe in URLs/filenames.
+String _urlEncodeFilename(String filename) {
+  // Uri.encodeComponent encodes everything except A-Z a-z 0-9 - _ . ~
+  // But we want to keep the dot for file extensions, which encodeComponent already does
+  return Uri.encodeComponent(filename);
 }
 
 /// Creates the content for a .url bookmark file.

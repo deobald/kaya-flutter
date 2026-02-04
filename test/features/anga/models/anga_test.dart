@@ -39,7 +39,8 @@ void main() {
 
     group('displayTitle', () {
       test('returns domain for bookmarks', () {
-        const content = '[InternetShortcut]\nURL=https://www.example.com/path\n';
+        const content =
+            '[InternetShortcut]\nURL=https://www.example.com/path\n';
         final anga = Anga.fromPath(
           '/kaya/anga/2026-01-27T171207-www-example-com.url',
           content: content,
@@ -94,16 +95,25 @@ void main() {
   group('filename generation', () {
     test('generateBookmarkFilename creates correct format', () {
       final ts = DateTime.utc(2026, 1, 27, 17, 12, 7);
-      final filename = generateBookmarkFilename('https://www.example.com/path?q=1', ts);
+      final filename = generateBookmarkFilename(
+        'https://www.example.com/path?q=1',
+        ts,
+      );
 
       expect(filename, equals('2026-01-27T171207-www-example-com.url'));
     });
 
     test('generateBookmarkFilename handles complex domains', () {
       final ts = DateTime.utc(2026, 1, 27, 17, 12, 7);
-      final filename = generateBookmarkFilename('https://sub.domain.example.co.uk/', ts);
+      final filename = generateBookmarkFilename(
+        'https://sub.domain.example.co.uk/',
+        ts,
+      );
 
-      expect(filename, equals('2026-01-27T171207-sub-domain-example-co-uk.url'));
+      expect(
+        filename,
+        equals('2026-01-27T171207-sub-domain-example-co-uk.url'),
+      );
     });
 
     test('generateNoteFilename creates correct format', () {
@@ -118,6 +128,45 @@ void main() {
       final filename = generateFileFilename('my-photo.jpg', ts);
 
       expect(filename, equals('2026-01-27T171207-my-photo.jpg'));
+    });
+
+    test('generateFileFilename URL-encodes spaces and special characters', () {
+      final ts = DateTime.utc(2026, 1, 27, 17, 12, 7);
+      final filename = generateFileFilename('GNOME Regento NDA.pdf', ts);
+
+      // Spaces should be encoded as %20
+      expect(filename, equals('2026-01-27T171207-GNOME%20Regento%20NDA.pdf'));
+      expect(filename, isNot(contains(' ')));
+    });
+
+    test('generateFileFilename URL-encodes unicode characters', () {
+      final ts = DateTime.utc(2026, 1, 27, 17, 12, 7);
+      final filename = generateFileFilename('документ.pdf', ts);
+
+      // Cyrillic characters should be URL-encoded
+      expect(filename, startsWith('2026-01-27T171207-'));
+      expect(filename, endsWith('.pdf'));
+      expect(filename, isNot(contains('д'))); // Should be encoded
+    });
+  });
+
+  group('displayTitle URL decoding', () {
+    test('decodes URL-encoded filename for display', () {
+      final anga = Anga.fromPath(
+        '/kaya/anga/2026-01-27T171207-GNOME%20Regento%20NDA.pdf',
+      );
+
+      // displayTitle should show decoded name with spaces, including extension
+      expect(anga.displayTitle, equals('GNOME Regento NDA.pdf'));
+    });
+
+    test('decodes complex URL-encoded filename for display', () {
+      final anga = Anga.fromPath(
+        '/kaya/anga/2026-01-27T171207-My%20File%20%2B%20Notes.txt',
+      );
+
+      // %2B is URL-encoded +, extension is preserved
+      expect(anga.displayTitle, equals('My File + Notes.txt'));
     });
   });
 

@@ -223,7 +223,7 @@ class SyncService {
         try {
           final response = await _makeRequest(
             'GET',
-            '$baseUrl/api/v1/${Uri.encodeComponent(email)}/anga/${Uri.encodeComponent(filename)}',
+            '$baseUrl/api/v1/${Uri.encodeComponent(email)}/anga/$filename',
             email,
             password,
           );
@@ -251,7 +251,7 @@ class SyncService {
           final contentType = _mimeTypeFor(filename);
 
           final response = await _uploadFile(
-            '$baseUrl/api/v1/${Uri.encodeComponent(email)}/anga/${Uri.encodeComponent(filename)}',
+            '$baseUrl/api/v1/${Uri.encodeComponent(email)}/anga/$filename',
             email,
             password,
             filename,
@@ -316,7 +316,7 @@ class SyncService {
         try {
           final response = await _makeRequest(
             'GET',
-            '$baseUrl/api/v1/${Uri.encodeComponent(email)}/meta/${Uri.encodeComponent(filename)}',
+            '$baseUrl/api/v1/${Uri.encodeComponent(email)}/meta/$filename',
             email,
             password,
           );
@@ -343,7 +343,7 @@ class SyncService {
           final bytes = await file.readAsBytes();
 
           final response = await _uploadFile(
-            '$baseUrl/api/v1/${Uri.encodeComponent(email)}/meta/${Uri.encodeComponent(filename)}',
+            '$baseUrl/api/v1/${Uri.encodeComponent(email)}/meta/$filename',
             email,
             password,
             filename,
@@ -411,7 +411,7 @@ class SyncService {
 
         // Get server file list for this bookmark's cache
         final serverFiles = await _fetchFileList(
-          '$baseUrl/api/v1/${Uri.encodeComponent(email)}/cache/${Uri.encodeComponent(bookmark)}',
+          '$baseUrl/api/v1/${Uri.encodeComponent(email)}/cache/$bookmark',
           email,
           password,
         );
@@ -429,7 +429,7 @@ class SyncService {
           try {
             final response = await _makeRequest(
               'GET',
-              '$baseUrl/api/v1/${Uri.encodeComponent(email)}/cache/${Uri.encodeComponent(bookmark)}/${Uri.encodeComponent(filename)}',
+              '$baseUrl/api/v1/${Uri.encodeComponent(email)}/cache/$bookmark/$filename',
               email,
               password,
             );
@@ -488,7 +488,7 @@ class SyncService {
       for (final anga in toSync) {
         // Get server file list for this anga's words
         final serverFiles = await _fetchFileList(
-          '$baseUrl/api/v1/${Uri.encodeComponent(email)}/words/${Uri.encodeComponent(anga)}',
+          '$baseUrl/api/v1/${Uri.encodeComponent(email)}/words/$anga',
           email,
           password,
         );
@@ -497,7 +497,7 @@ class SyncService {
           try {
             final response = await _makeRequest(
               'GET',
-              '$baseUrl/api/v1/${Uri.encodeComponent(email)}/words/${Uri.encodeComponent(anga)}/${Uri.encodeComponent(filename)}',
+              '$baseUrl/api/v1/${Uri.encodeComponent(email)}/words/$anga/$filename',
               email,
               password,
             );
@@ -533,11 +533,11 @@ class SyncService {
   ) async {
     final response = await _makeRequest('GET', url, email, password);
     if (response.statusCode == 200) {
-      // URL-decode filenames from the server response since the server
-      // URL-encodes them in the index listing
+      // Don't decode - store filenames exactly as the server returns them
+      // (URL-encoded) to maintain perfect symmetry with the server's filesystem
       return response.body
           .split('\n')
-          .map((f) => Uri.decodeComponent(f.trim()))
+          .map((f) => f.trim())
           .where((f) => f.isNotEmpty)
           .toList();
     }
