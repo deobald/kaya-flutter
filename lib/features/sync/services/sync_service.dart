@@ -20,7 +20,8 @@ class SyncResult {
   final int angaUploaded;
   final int metaDownloaded;
   final int metaUploaded;
-  final int cacheDownloaded;
+  final int faviconDownloaded;
+  final int wordsDownloaded;
   final List<String> errors;
   final bool isConnectionError;
 
@@ -29,7 +30,8 @@ class SyncResult {
     this.angaUploaded = 0,
     this.metaDownloaded = 0,
     this.metaUploaded = 0,
-    this.cacheDownloaded = 0,
+    this.faviconDownloaded = 0,
+    this.wordsDownloaded = 0,
     this.errors = const [],
     this.isConnectionError = false,
   });
@@ -39,7 +41,8 @@ class SyncResult {
       angaUploaded > 0 ||
       metaDownloaded > 0 ||
       metaUploaded > 0 ||
-      cacheDownloaded > 0;
+      faviconDownloaded > 0 ||
+      wordsDownloaded > 0;
 
   bool get hasErrors => errors.isNotEmpty;
 }
@@ -80,7 +83,8 @@ class SyncService {
     var angaUploaded = 0;
     var metaDownloaded = 0;
     var metaUploaded = 0;
-    var cacheDownloaded = 0;
+    var faviconDownloaded = 0;
+    var wordsDownloaded = 0;
 
     try {
       // Sync anga files
@@ -105,14 +109,25 @@ class SyncService {
         }
       }
 
-      // Sync cache (download only, skip if already got connection error)
+      // Sync favicons from cache (download only, skip if already got connection error)
       if (!isConnectionError) {
-        final cacheResult = await _syncCache(baseUrl, email, password);
-        cacheDownloaded = cacheResult.downloaded;
-        errors.addAll(cacheResult.errors);
-        if (cacheResult.isConnectionError) {
+        final faviconResult = await _syncFavicons(baseUrl, email, password);
+        faviconDownloaded = faviconResult.downloaded;
+        errors.addAll(faviconResult.errors);
+        if (faviconResult.isConnectionError) {
           isConnectionError = true;
-          _logger?.w('Sync connection error during cache sync');
+          _logger?.w('Sync connection error during favicon sync');
+        }
+      }
+
+      // Sync words (download only, skip if already got connection error)
+      if (!isConnectionError) {
+        final wordsResult = await _syncWords(baseUrl, email, password);
+        wordsDownloaded = wordsResult.downloaded;
+        errors.addAll(wordsResult.errors);
+        if (wordsResult.isConnectionError) {
+          isConnectionError = true;
+          _logger?.w('Sync connection error during words sync');
         }
       }
     } on SocketException catch (e) {
@@ -133,7 +148,8 @@ class SyncService {
       angaUploaded: angaUploaded,
       metaDownloaded: metaDownloaded,
       metaUploaded: metaUploaded,
-      cacheDownloaded: cacheDownloaded,
+      faviconDownloaded: faviconDownloaded,
+      wordsDownloaded: wordsDownloaded,
       errors: errors,
       isConnectionError: isConnectionError,
     );
@@ -141,7 +157,7 @@ class SyncService {
     // Log only if there were changes or errors
     if (result.hasChanges) {
       _logger?.i(
-        'Sync complete: ${angaDownloaded + metaDownloaded + cacheDownloaded} downloaded, '
+        'Sync complete: ${angaDownloaded + metaDownloaded + faviconDownloaded + wordsDownloaded} downloaded, '
         '${angaUploaded + metaUploaded} uploaded',
       );
     }
@@ -364,7 +380,15 @@ class SyncService {
     return result;
   }
 
-  Future<_SyncDirResult> _syncCache(
+  /// Checks if a filename is a favicon file.
+  bool _isFaviconFile(String filename) {
+    final lower = filename.toLowerCase();
+    return lower.contains('favicon') ||
+        lower == 'icon.png' ||
+        lower == 'icon.ico';
+  }
+
+  Future<_SyncDirResult> _syncFavicons(
     String baseUrl,
     String email,
     String password,
@@ -379,82 +403,53 @@ class SyncService {
         password,
       );
 
-      // Get local cache bookmark list
-      final localBookmarks = await _storage.listCachedBookmarks();
-
-      // Download missing bookmark caches
       for (final bookmark in serverBookmarks) {
-        if (!localBookmarks.contains(bookmark)) {
-          // Download all files for this bookmark
-          final files = await _fetchFileList(
-            '$baseUrl/api/v1/${Uri.encodeComponent(email)}/cache/${Uri.encodeComponent(bookmark)}',
-            email,
-            password,
-          );
+        // Skip bookmarks that already have a favicon or a .nofavicon marker
+        if (await _storage.hasFaviconOrMarker(bookmark)) {
+          continue;
+        }
 
-          for (final filename in files) {
-            try {
-              final response = await _makeRequest(
-                'GET',
-                '$baseUrl/api/v1/${Uri.encodeComponent(email)}/cache/${Uri.encodeComponent(bookmark)}/${Uri.encodeComponent(filename)}',
-                email,
-                password,
-              );
-              if (response.statusCode == 200) {
-                await _storage.saveCacheFile(
-                  bookmark,
-                  filename,
-                  response.bodyBytes,
-                );
-                result.downloaded++;
-                _logger?.i('[CACHE DOWNLOAD] $bookmark/$filename');
-              }
-            } catch (e) {
-              if (_isConnectionError(e)) {
-                result.isConnectionError = true;
-                return result;
-              }
-              result.errors.add(
-                'Failed to download cache $bookmark/$filename: $e',
-              );
-            }
-          }
-        } else {
-          // Sync any missing files for existing bookmark cache
-          final serverFiles = await _fetchFileList(
-            '$baseUrl/api/v1/${Uri.encodeComponent(email)}/cache/${Uri.encodeComponent(bookmark)}',
-            email,
-            password,
-          );
-          final localFiles = await _storage.listCacheFiles(bookmark);
-          final toDownload = serverFiles.where((f) => !localFiles.contains(f));
+        // Get server file list for this bookmark's cache
+        final serverFiles = await _fetchFileList(
+          '$baseUrl/api/v1/${Uri.encodeComponent(email)}/cache/${Uri.encodeComponent(bookmark)}',
+          email,
+          password,
+        );
 
-          for (final filename in toDownload) {
-            try {
-              final response = await _makeRequest(
-                'GET',
-                '$baseUrl/api/v1/${Uri.encodeComponent(email)}/cache/${Uri.encodeComponent(bookmark)}/${Uri.encodeComponent(filename)}',
-                email,
-                password,
+        // Only consider favicon files
+        final faviconFiles = serverFiles.where(_isFaviconFile).toList();
+
+        if (faviconFiles.isEmpty) {
+          // No favicon available on server; create .nofavicon marker
+          await _storage.createNoFaviconMarker(bookmark);
+          continue;
+        }
+
+        for (final filename in faviconFiles) {
+          try {
+            final response = await _makeRequest(
+              'GET',
+              '$baseUrl/api/v1/${Uri.encodeComponent(email)}/cache/${Uri.encodeComponent(bookmark)}/${Uri.encodeComponent(filename)}',
+              email,
+              password,
+            );
+            if (response.statusCode == 200) {
+              await _storage.saveCacheFile(
+                bookmark,
+                filename,
+                response.bodyBytes,
               );
-              if (response.statusCode == 200) {
-                await _storage.saveCacheFile(
-                  bookmark,
-                  filename,
-                  response.bodyBytes,
-                );
-                result.downloaded++;
-                _logger?.i('[CACHE DOWNLOAD] $bookmark/$filename');
-              }
-            } catch (e) {
-              if (_isConnectionError(e)) {
-                result.isConnectionError = true;
-                return result;
-              }
-              result.errors.add(
-                'Failed to download cache $bookmark/$filename: $e',
-              );
+              result.downloaded++;
+              _logger?.i('[FAVICON DOWNLOAD] $bookmark/$filename');
             }
+          } catch (e) {
+            if (_isConnectionError(e)) {
+              result.isConnectionError = true;
+              return result;
+            }
+            result.errors.add(
+              'Failed to download favicon $bookmark/$filename: $e',
+            );
           }
         }
       }
@@ -463,7 +458,69 @@ class SyncService {
         result.isConnectionError = true;
         return result;
       }
-      result.errors.add('Cache sync failed: $e');
+      result.errors.add('Favicon sync failed: $e');
+    }
+
+    return result;
+  }
+
+  Future<_SyncDirResult> _syncWords(
+    String baseUrl,
+    String email,
+    String password,
+  ) async {
+    final result = _SyncDirResult();
+
+    try {
+      // Get server words anga list
+      final serverAngas = await _fetchFileList(
+        '$baseUrl/api/v1/${Uri.encodeComponent(email)}/words',
+        email,
+        password,
+      );
+
+      // Get local words anga list
+      final localAngas = await _storage.listWordsAngas();
+
+      // Only process angas that don't exist locally yet
+      final toSync = serverAngas.where((a) => !localAngas.contains(a));
+
+      for (final anga in toSync) {
+        // Get server file list for this anga's words
+        final serverFiles = await _fetchFileList(
+          '$baseUrl/api/v1/${Uri.encodeComponent(email)}/words/${Uri.encodeComponent(anga)}',
+          email,
+          password,
+        );
+
+        for (final filename in serverFiles) {
+          try {
+            final response = await _makeRequest(
+              'GET',
+              '$baseUrl/api/v1/${Uri.encodeComponent(email)}/words/${Uri.encodeComponent(anga)}/${Uri.encodeComponent(filename)}',
+              email,
+              password,
+            );
+            if (response.statusCode == 200) {
+              await _storage.saveWordsFile(anga, filename, response.bodyBytes);
+              result.downloaded++;
+              _logger?.i('[WORDS DOWNLOAD] $anga/$filename');
+            }
+          } catch (e) {
+            if (_isConnectionError(e)) {
+              result.isConnectionError = true;
+              return result;
+            }
+            result.errors.add('Failed to download words $anga/$filename: $e');
+          }
+        }
+      }
+    } catch (e) {
+      if (_isConnectionError(e)) {
+        result.isConnectionError = true;
+        return result;
+      }
+      result.errors.add('Words sync failed: $e');
     }
 
     return result;
@@ -476,6 +533,8 @@ class SyncService {
   ) async {
     final response = await _makeRequest('GET', url, email, password);
     if (response.statusCode == 200) {
+      // URL-decode filenames from the server response since the server
+      // URL-encodes them in the index listing
       return response.body
           .split('\n')
           .map((f) => Uri.decodeComponent(f.trim()))
@@ -699,8 +758,11 @@ class SyncController extends _$SyncController {
         }
       }
 
-      // Refresh angas if anything was downloaded
-      if (result.angaDownloaded > 0 || result.metaDownloaded > 0) {
+      // Refresh angas if anything was downloaded (including words, which
+      // triggers a search index rebuild so new words become searchable)
+      if (result.angaDownloaded > 0 ||
+          result.metaDownloaded > 0 ||
+          result.wordsDownloaded > 0) {
         ref.read(angaRepositoryProvider.notifier).refresh();
       }
 

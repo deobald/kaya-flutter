@@ -1,7 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fuzzy_bolt/fuzzy_bolt.dart';
 import 'package:kaya/features/anga/models/anga.dart';
-import 'package:kaya/features/anga/models/anga_type.dart';
 import 'package:kaya/features/anga/services/anga_repository.dart';
 import 'package:kaya/features/anga/services/file_storage_service.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -57,14 +56,10 @@ class SearchService {
       parts.add(anga.url!);
     }
 
-    // Add cached content for bookmarks
-    if (anga.type == AngaType.bookmark) {
-      final cachedHtml = await _storage.getCachedHtml(anga.filename);
-      if (cachedHtml != null) {
-        // Strip HTML tags for searching
-        final strippedText = _stripHtml(cachedHtml);
-        parts.add(strippedText);
-      }
+    // Add words (extracted plaintext) for bookmarks, PDFs, etc.
+    final wordsText = await _storage.getWordsText(anga.filename);
+    if (wordsText != null) {
+      parts.add(wordsText);
     }
 
     // Add metadata tags and notes
@@ -80,16 +75,6 @@ class SearchService {
     // For now, PDFs are searchable by filename only
 
     return parts.join(' ').toLowerCase();
-  }
-
-  /// Strips HTML tags from content.
-  String _stripHtml(String html) {
-    return html
-        .replaceAll(RegExp(r'<script[^>]*>[\s\S]*?</script>'), '')
-        .replaceAll(RegExp(r'<style[^>]*>[\s\S]*?</style>'), '')
-        .replaceAll(RegExp(r'<[^>]+>'), ' ')
-        .replaceAll(RegExp(r'\s+'), ' ')
-        .trim();
   }
 
   /// Searches for angas matching the query.
@@ -112,10 +97,12 @@ class SearchService {
     // This handles cases like searching "town" in "https://kaya.town"
     for (final item in searchItems) {
       if (item.searchText.contains(queryLower)) {
-        results.add(SearchResult(
-          anga: item.anga,
-          score: 1.0, // Exact substring match gets highest score
-        ));
+        results.add(
+          SearchResult(
+            anga: item.anga,
+            score: 1.0, // Exact substring match gets highest score
+          ),
+        );
       }
     }
 
@@ -138,14 +125,14 @@ class SearchService {
       if (matchedText == null) continue;
 
       // Find the matching anga by comparing lowercased search text
-      final matchIndex = searchItems.indexWhere((item) =>
-        item.searchText == matchedText);
+      final matchIndex = searchItems.indexWhere(
+        (item) => item.searchText == matchedText,
+      );
 
       if (matchIndex >= 0) {
-        results.add(SearchResult(
-          anga: searchItems[matchIndex].anga,
-          score: rank,
-        ));
+        results.add(
+          SearchResult(anga: searchItems[matchIndex].anga, score: rank),
+        );
       }
     }
 

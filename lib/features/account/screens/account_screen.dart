@@ -53,9 +53,7 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
     final syncStatus = ref.watch(syncControllerProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Account'),
-      ),
+      appBar: AppBar(title: const Text('Account')),
       body: settingsAsync.when(
         data: (settings) {
           _loadSettings();
@@ -76,9 +74,7 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
           );
         },
         loading: () => const Center(
-          child: CircularProgressIndicator(
-            semanticsLabel: 'Loading settings',
-          ),
+          child: CircularProgressIndicator(semanticsLabel: 'Loading settings'),
         ),
         error: (error, _) => Center(child: Text('Error: $error')),
       ),
@@ -92,10 +88,7 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Server',
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
+            Text('Server', style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: 16),
             TextField(
               controller: _serverController,
@@ -120,10 +113,7 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Credentials',
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
+            Text('Credentials', style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: 16),
             TextField(
               controller: _emailController,
@@ -168,10 +158,7 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(
-              'Actions',
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
+            Text('Actions', style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: 16),
             ElevatedButton.icon(
               onPressed: _testing ? null : _testConnection,
@@ -209,8 +196,8 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
               Text(
                 'Last sync had errors - check Troubleshooting',
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Theme.of(context).colorScheme.error,
-                    ),
+                  color: Theme.of(context).colorScheme.error,
+                ),
               ),
             ],
           ],
@@ -287,9 +274,9 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
         final message = result.hasErrors
             ? 'Sync completed with errors'
             : result.hasChanges
-                ? 'Sync complete: ${result.angaDownloaded + result.metaDownloaded + result.cacheDownloaded} downloaded, '
-                    '${result.angaUploaded + result.metaUploaded} uploaded'
-                : 'Already in sync';
+            ? 'Sync complete: ${result.angaDownloaded + result.metaDownloaded + result.faviconDownloaded + result.wordsDownloaded} downloaded, '
+                  '${result.angaUploaded + result.metaUploaded} uploaded'
+            : 'Already in sync';
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

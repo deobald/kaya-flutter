@@ -15,7 +15,8 @@ part 'file_storage_service.g.dart';
 /// Directory structure:
 /// - /kaya/anga/  - bookmarks, notes, and files
 /// - /kaya/meta/  - metadata TOML files
-/// - /kaya/cache/ - cached webpage content (download-only from server)
+/// - /kaya/cache/ - cached favicons (download-only from server)
+/// - /kaya/words/ - extracted plaintext for search (download-only from server)
 class FileStorageService {
   final String _rootPath;
   final LoggerService? _logger;
@@ -25,12 +26,14 @@ class FileStorageService {
   String get angaPath => '$_rootPath/anga';
   String get metaPath => '$_rootPath/meta';
   String get cachePath => '$_rootPath/cache';
+  String get wordsPath => '$_rootPath/words';
 
   /// Ensures all required directories exist.
   Future<void> ensureDirectories() async {
     await Directory(angaPath).create(recursive: true);
     await Directory(metaPath).create(recursive: true);
     await Directory(cachePath).create(recursive: true);
+    await Directory(wordsPath).create(recursive: true);
   }
 
   // ============================================================================
@@ -220,8 +223,9 @@ class FileStorageService {
   /// Returns the most recent metadata file for that anga.
   Future<AngaMeta?> loadMetaForAnga(String angaFilename) async {
     final allMeta = await loadAllMeta();
-    final matching =
-        allMeta.where((m) => m.angaFilename == angaFilename).toList();
+    final matching = allMeta
+        .where((m) => m.angaFilename == angaFilename)
+        .toList();
 
     if (matching.isEmpty) return null;
 
@@ -329,8 +333,9 @@ class FileStorageService {
     // Look for index.html or similar
     for (final filename in files) {
       if (filename.endsWith('.html') || filename.endsWith('.htm')) {
-        final content =
-            await readFileContent('$cachePath/$cacheDirName/$filename');
+        final content = await readFileContent(
+          '$cachePath/$cacheDirName/$filename',
+        );
         if (content != null) return content;
       }
     }
@@ -340,7 +345,10 @@ class FileStorageService {
 
   /// Saves a cache file (used during sync download).
   Future<void> saveCacheFile(
-      String bookmarkName, String filename, List<int> bytes) async {
+    String bookmarkName,
+    String filename,
+    List<int> bytes,
+  ) async {
     final dir = Directory('$cachePath/$bookmarkName');
     await dir.create(recursive: true);
 
@@ -363,6 +371,103 @@ class FileStorageService {
     }
 
     return null;
+  }
+
+  /// Checks if a bookmark already has a favicon or a `.nofavicon` marker,
+  /// meaning we don't need to query the server for it again.
+  Future<bool> hasFaviconOrMarker(String bookmarkName) async {
+    final dir = Directory('$cachePath/$bookmarkName');
+    if (!await dir.exists()) return false;
+
+    final files = await dir.list().toList();
+    for (final entity in files.whereType<File>()) {
+      final name = entity.path.split('/').last;
+      if (name == '.nofavicon' ||
+          name.contains('favicon') ||
+          name == 'icon.png' ||
+          name == 'icon.ico') {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  /// Creates a `.nofavicon` marker file to indicate that the server's cache
+  /// for this bookmark has no favicon, so we don't re-check on future syncs.
+  Future<void> createNoFaviconMarker(String bookmarkName) async {
+    final dir = Directory('$cachePath/$bookmarkName');
+    await dir.create(recursive: true);
+    await File('${dir.path}/.nofavicon').writeAsString('');
+  }
+
+  // ============================================================================
+  // Words Operations (download-only, extracted plaintext for search)
+  // ============================================================================
+
+  /// Derives the words directory name from an anga filename.
+  /// The server stores words directories with the full anga filename (including extension).
+  String _wordsAngaName(String angaFilename) {
+    return angaFilename;
+  }
+
+  /// Lists all anga directories under /kaya/words/.
+  Future<List<String>> listWordsAngas() async {
+    final dir = Directory(wordsPath);
+    if (!await dir.exists()) return [];
+
+    final dirs = await dir.list().toList();
+    return dirs
+        .whereType<Directory>()
+        .map((d) => d.path.split('/').last)
+        .where((name) => !name.startsWith('.'))
+        .toList();
+  }
+
+  /// Lists files in a words anga directory.
+  Future<List<String>> listWordsFiles(String angaName) async {
+    final dir = Directory('$wordsPath/$angaName');
+    if (!await dir.exists()) return [];
+
+    final files = await dir.list().toList();
+    return files
+        .whereType<File>()
+        .map((f) => f.path.split('/').last)
+        .where((name) => !name.startsWith('.'))
+        .toList();
+  }
+
+  /// Saves a words file (used during sync download).
+  Future<void> saveWordsFile(
+    String angaName,
+    String filename,
+    List<int> bytes,
+  ) async {
+    final dir = Directory('$wordsPath/$angaName');
+    await dir.create(recursive: true);
+
+    final path = '${dir.path}/$filename';
+    await File(path).writeAsBytes(bytes);
+  }
+
+  /// Gets the concatenated plaintext from words files for an anga.
+  /// Returns null if no words exist for this anga.
+  Future<String?> getWordsText(String angaFilename) async {
+    final angaName = _wordsAngaName(angaFilename);
+    final files = await listWordsFiles(angaName);
+
+    if (files.isEmpty) return null;
+
+    final parts = <String>[];
+    for (final filename in files) {
+      final content = await readFileContent('$wordsPath/$angaName/$filename');
+      if (content != null && content.isNotEmpty) {
+        parts.add(content);
+      }
+    }
+
+    if (parts.isEmpty) return null;
+    return parts.join(' ');
   }
 }
 

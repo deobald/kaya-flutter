@@ -87,9 +87,7 @@ class _PreviewScreenState extends ConsumerState<PreviewScreen> {
       loading: () => Scaffold(
         appBar: AppBar(),
         body: const Center(
-          child: CircularProgressIndicator(
-            semanticsLabel: 'Loading preview',
-          ),
+          child: CircularProgressIndicator(semanticsLabel: 'Loading preview'),
         ),
       ),
       error: (error, _) => Scaffold(
@@ -112,36 +110,34 @@ class _PreviewScreenState extends ConsumerState<PreviewScreen> {
 
   Widget _buildBookmarkContent(Anga anga) {
     return FutureBuilder<String?>(
-      future: _getBookmarkHtml(anga),
+      future: _getWordsText(anga),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const SizedBox(
             height: 300,
             child: Center(
               child: CircularProgressIndicator(
-                semanticsLabel: 'Loading webpage',
+                semanticsLabel: 'Loading content',
               ),
             ),
           );
         }
 
         if (snapshot.hasData && snapshot.data != null) {
-          // Display cached HTML - simplified view for now
-          // TODO: Use webview for full HTML rendering
           return Container(
             height: 300,
             padding: const EdgeInsets.all(16),
             color: Theme.of(context).colorScheme.surfaceContainerHighest,
             child: SingleChildScrollView(
               child: Text(
-                _stripHtml(snapshot.data!),
+                snapshot.data!,
                 style: Theme.of(context).textTheme.bodyMedium,
               ),
             ),
           );
         }
 
-        // No cache available
+        // No words available
         return Container(
           height: 200,
           padding: const EdgeInsets.all(16),
@@ -156,10 +152,10 @@ class _PreviewScreenState extends ConsumerState<PreviewScreen> {
                   color: Theme.of(context).colorScheme.primary,
                 ),
                 const SizedBox(height: 8),
-                const Text('Cached content not available'),
+                const Text('Extracted text not available'),
                 const SizedBox(height: 4),
                 Text(
-                  'Sync with server to get cached content',
+                  'Sync with server to get searchable text',
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
               ],
@@ -170,18 +166,9 @@ class _PreviewScreenState extends ConsumerState<PreviewScreen> {
     );
   }
 
-  Future<String?> _getBookmarkHtml(Anga anga) async {
+  Future<String?> _getWordsText(Anga anga) async {
     final storage = await ref.read(fileStorageServiceProvider.future);
-    return await storage.getCachedHtml(anga.filename);
-  }
-
-  String _stripHtml(String html) {
-    return html
-        .replaceAll(RegExp(r'<script[^>]*>[\s\S]*?</script>'), '')
-        .replaceAll(RegExp(r'<style[^>]*>[\s\S]*?</style>'), '')
-        .replaceAll(RegExp(r'<[^>]+>'), ' ')
-        .replaceAll(RegExp(r'\s+'), ' ')
-        .trim();
+    return await storage.getWordsText(anga.filename);
   }
 
   Widget _buildNoteContent(Anga anga) {
@@ -263,9 +250,7 @@ class _PreviewScreenState extends ConsumerState<PreviewScreen> {
       return const SizedBox(
         height: 300,
         child: Center(
-          child: CircularProgressIndicator(
-            semanticsLabel: 'Loading video',
-          ),
+          child: CircularProgressIndicator(semanticsLabel: 'Loading video'),
         ),
       );
     }
@@ -295,8 +280,7 @@ class _PreviewScreenState extends ConsumerState<PreviewScreen> {
                   }
                 });
               },
-              tooltip:
-                  _videoController!.value.isPlaying ? 'Pause' : 'Play',
+              tooltip: _videoController!.value.isPlaying ? 'Pause' : 'Play',
             ),
           ],
         ),
@@ -308,9 +292,7 @@ class _PreviewScreenState extends ConsumerState<PreviewScreen> {
     return Container(
       height: 200,
       padding: const EdgeInsets.all(16),
-      child: const Center(
-        child: Text('Error loading file'),
-      ),
+      child: const Center(child: Text('Error loading file')),
     );
   }
 
@@ -325,8 +307,8 @@ class _PreviewScreenState extends ConsumerState<PreviewScreen> {
           Text(
             anga.url!,
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Theme.of(context).colorScheme.primary,
-                ),
+              color: Theme.of(context).colorScheme.primary,
+            ),
           ),
           const SizedBox(height: 8),
           ElevatedButton.icon(
@@ -339,8 +321,7 @@ class _PreviewScreenState extends ConsumerState<PreviewScreen> {
     );
   }
 
-  Widget _buildMetadataSection(
-      Anga anga, AsyncValue<AngaMeta?> metaAsync) {
+  Widget _buildMetadataSection(Anga anga, AsyncValue<AngaMeta?> metaAsync) {
     return metaAsync.when(
       data: (meta) {
         // Initialize controllers if not already set
@@ -356,10 +337,7 @@ class _PreviewScreenState extends ConsumerState<PreviewScreen> {
             children: [
               const Divider(),
               const SizedBox(height: 16),
-              Text(
-                'Metadata',
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
+              Text('Metadata', style: Theme.of(context).textTheme.titleMedium),
               const SizedBox(height: 16),
               TextField(
                 controller: _tagsController,
@@ -393,9 +371,7 @@ class _PreviewScreenState extends ConsumerState<PreviewScreen> {
       loading: () => const Padding(
         padding: EdgeInsets.all(16),
         child: Center(
-          child: CircularProgressIndicator(
-            semanticsLabel: 'Loading metadata',
-          ),
+          child: CircularProgressIndicator(semanticsLabel: 'Loading metadata'),
         ),
       ),
       error: (err, stack) => const SizedBox.shrink(),
@@ -408,23 +384,20 @@ class _PreviewScreenState extends ConsumerState<PreviewScreen> {
         .map((t) => t.trim())
         .where((t) => t.isNotEmpty)
         .toList();
-    final note =
-        _noteController.text.isEmpty ? null : _noteController.text;
+    final note = _noteController.text.isEmpty ? null : _noteController.text;
 
-    await ref.read(angaRepositoryProvider.notifier).saveMeta(
-          anga.filename,
-          tags: tags,
-          note: note,
-        );
+    await ref
+        .read(angaRepositoryProvider.notifier)
+        .saveMeta(anga.filename, tags: tags, note: note);
 
     setState(() {
       _metadataChanged = false;
     });
 
     if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Metadata saved')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Metadata saved')));
     }
   }
 

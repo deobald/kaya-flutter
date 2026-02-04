@@ -60,3 +60,17 @@ A Dart VM Service on Steven’s iPhone is available at: http://127.0.0.1:52485/9
 The Flutter DevTools debugger and profiler on Steven’s iPhone is available at:
 http://127.0.0.1:52485/91r4qpeNe5w=/devtools/?uri=ws://127.0.0.1:52485/91r4qpeNe5w=/ws
 ```
+
+## Search via 'words' instead of 'cache'
+
+Currently, the app downloads searchable content using the entire server-side cache from the Kaya Server. However, downloading the entire cache is very network-intensive.
+
+Instead of downloading the entire cache, only download bookmark favicons to the local cache for displaying on tiles.
+
+Where all the previous cache download behaviour was happening, download 'words' instead, as per [@adr-0002-service-sync.md](file:///Users/steven/work/deobald/kaya-flutter/doc/arch/adr-0002-service-sync.md).
+
+Read [@PLAN.md](file:///Users/steven/work/deobald/kaya-flutter/doc/plan/PLAN.md) before planning and implementing.
+
+### Don't hit the API unless a cached favicon or searchable 'words' text is missing
+
+When the app syncs, it appears to request all the cached file indexes and 'words' indexes every time. This shouldn't be necessary. If the local app has a copy of a 'words' searchable text or if it already has a favicon for a given bookmark, it need not query the index again. If there was no favicon available, the local app should create a note to itself in the local cache by creating a `.nofavicon` turd file, which it can check for next time it syncs. If there is a `.nofavicon` turd file present, it shouldn't re-index that bookmark's API endpoint looking for one.

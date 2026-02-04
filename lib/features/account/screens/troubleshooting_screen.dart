@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kaya/core/services/logger_service.dart';
+import 'package:kaya/features/anga/services/file_storage_service.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -71,8 +72,8 @@ class _TroubleshootingScreenState extends ConsumerState<TroubleshootingScreen> {
                     ),
                   )
                 : _logs.isEmpty
-                    ? _buildEmptyState()
-                    : _buildLogViewer(),
+                ? _buildEmptyState()
+                : _buildLogViewer(),
           ),
           _buildActions(),
         ],
@@ -91,16 +92,13 @@ class _TroubleshootingScreenState extends ConsumerState<TroubleshootingScreen> {
             color: Theme.of(context).colorScheme.primary,
           ),
           const SizedBox(height: 16),
-          Text(
-            'No logs yet',
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
+          Text('No logs yet', style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: 8),
           Text(
             'Logs will appear here as you use the app',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
           ),
         ],
       ),
@@ -114,10 +112,7 @@ class _TroubleshootingScreenState extends ConsumerState<TroubleshootingScreen> {
         padding: const EdgeInsets.all(16),
         child: SelectableText(
           _logs,
-          style: const TextStyle(
-            fontFamily: 'monospace',
-            fontSize: 12,
-          ),
+          style: const TextStyle(fontFamily: 'monospace', fontSize: 12),
         ),
       ),
     );
@@ -127,27 +122,116 @@ class _TroubleshootingScreenState extends ConsumerState<TroubleshootingScreen> {
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.all(16),
-        child: Row(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Expanded(
-              child: OutlinedButton.icon(
-                onPressed: _clearLogs,
-                icon: const Icon(Icons.delete_outline),
-                label: const Text('Clear Logs'),
-              ),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: _dumpWordsDebug,
+                    icon: const Icon(Icons.bug_report),
+                    label: const Text('Dump Words'),
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: ElevatedButton.icon(
-                onPressed: _sendToDeveloper,
-                icon: const Icon(Icons.email),
-                label: const Text('Send To Developer'),
-              ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton.icon(
+                    onPressed: _clearLogs,
+                    icon: const Icon(Icons.delete_outline),
+                    label: const Text('Clear Logs'),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: _sendToDeveloper,
+                    icon: const Icon(Icons.email),
+                    label: const Text('Send To Developer'),
+                  ),
+                ),
+              ],
             ),
           ],
         ),
       ),
     );
+  }
+
+  Future<void> _dumpWordsDebug() async {
+    final logger = await ref.read(loggerServiceProvider.future);
+    final storage = await ref.read(fileStorageServiceProvider.future);
+
+    logger.i('=== DEBUG: Words Directory Dump ===');
+    logger.i('Words path: ${storage.wordsPath}');
+
+    final wordsDir = Directory(storage.wordsPath);
+    if (!await wordsDir.exists()) {
+      logger.i('Words directory does not exist!');
+      await _loadLogs();
+      return;
+    }
+
+    final angaDirs = await wordsDir.list().toList();
+    logger.i('Found ${angaDirs.length} anga directories in words/');
+
+    for (final entry in angaDirs) {
+      if (entry is Directory) {
+        final dirName = entry.path.split('/').last;
+        logger.i('  [$dirName]');
+
+        final files = await entry.list().toList();
+        for (final file in files) {
+          if (file is File) {
+            final fileName = file.path.split('/').last;
+            final content = await file.readAsString();
+            logger.i('    - $fileName (${content.length} chars)');
+            // Log first 500 chars of content
+            final preview = content.length > 500
+                ? '${content.substring(0, 500)}...'
+                : content;
+            logger.i('      Content: $preview');
+            // Check for specific words
+            if (content.toLowerCase().contains('collectively')) {
+              logger.i('      *** CONTAINS "collectively" ***');
+            }
+            if (content.toLowerCase().contains('notwithstanding')) {
+              logger.i('      *** CONTAINS "notwithstanding" ***');
+            }
+          }
+        }
+      }
+    }
+
+    // Also dump anga files that are PDFs
+    logger.i('=== DEBUG: PDF Angas ===');
+    final angaFiles = await storage.listAngaFiles();
+    for (final filename in angaFiles) {
+      if (filename.endsWith('.pdf')) {
+        logger.i('  PDF: $filename');
+        // Check if words exist for this PDF
+        final wordsText = await storage.getWordsText(filename);
+        if (wordsText != null) {
+          logger.i('    Words found: ${wordsText.length} chars');
+        } else {
+          logger.i('    NO WORDS FOUND');
+        }
+      }
+    }
+
+    logger.i('=== END DEBUG ===');
+
+    await _loadLogs();
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Debug info dumped to logs')),
+      );
+    }
   }
 
   Future<void> _clearLogs() async {
@@ -175,9 +259,9 @@ class _TroubleshootingScreenState extends ConsumerState<TroubleshootingScreen> {
       await _loadLogs();
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Logs cleared')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Logs cleared')));
       }
     }
   }
@@ -188,9 +272,9 @@ class _TroubleshootingScreenState extends ConsumerState<TroubleshootingScreen> {
 
     if (logFile == null || !await logFile.exists()) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('No log file available')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('No log file available')));
       }
       return;
     }
@@ -201,7 +285,8 @@ class _TroubleshootingScreenState extends ConsumerState<TroubleshootingScreen> {
       path: 'steven+kaya@deobald.ca',
       queryParameters: {
         'subject': 'Kaya App Logs',
-        'body': 'Please find the attached log file.\n\n'
+        'body':
+            'Please find the attached log file.\n\n'
             'Device: ${Platform.operatingSystem}\n'
             'OS Version: ${Platform.operatingSystemVersion}\n',
       },
@@ -216,10 +301,9 @@ class _TroubleshootingScreenState extends ConsumerState<TroubleshootingScreen> {
       );
     } else {
       // Fallback to just sharing the file
-      await Share.shareXFiles(
-        [XFile(logFile.path)],
-        subject: 'Kaya App Logs - Send to steven+kaya@deobald.ca',
-      );
+      await Share.shareXFiles([
+        XFile(logFile.path),
+      ], subject: 'Kaya App Logs - Send to steven+kaya@deobald.ca');
     }
   }
 }
