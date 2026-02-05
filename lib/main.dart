@@ -17,11 +17,7 @@ void main() async {
     DeviceOrientation.landscapeRight,
   ]);
 
-  runApp(
-    const ProviderScope(
-      child: KayaApp(),
-    ),
-  );
+  runApp(const ProviderScope(child: KayaApp()));
 }
 
 class KayaApp extends ConsumerWidget {
@@ -37,7 +33,7 @@ class KayaApp extends ConsumerWidget {
     ref.watch(syncControllerProvider);
 
     return MaterialApp.router(
-      title: 'Kaya',
+      title: 'Save Button',
       theme: _buildLightTheme(),
       darkTheme: _buildDarkTheme(),
       themeMode: ThemeMode.system,
@@ -83,9 +79,7 @@ class KayaApp extends ConsumerWidget {
       ),
       cardTheme: CardThemeData(
         elevation: 1,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
@@ -158,9 +152,7 @@ class KayaApp extends ConsumerWidget {
       ),
       cardTheme: CardThemeData(
         elevation: 1,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,

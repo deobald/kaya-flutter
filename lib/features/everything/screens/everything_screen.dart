@@ -55,7 +55,7 @@ class _EverythingScreenState extends ConsumerState<EverythingScreen> {
             tooltip: 'Menu',
           ),
         ),
-        title: const Text('Kaya'),
+        title: const Text('Save Button'),
         actions: [
           const ErrorAlertIcon(),
           const CloudStatusIcon(),
@@ -90,7 +90,7 @@ class _EverythingScreenState extends ConsumerState<EverythingScreen> {
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   Text(
-                    'Kaya',
+                    'Save Button',
                     style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                       color: Theme.of(context).colorScheme.onPrimaryContainer,
                     ),
@@ -264,7 +264,7 @@ class _EverythingScreenState extends ConsumerState<EverythingScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            'Share content to Kaya or tap + to add',
+            'Share content to Save Button or tap + to add',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
               color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),

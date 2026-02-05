@@ -1,5 +1,5 @@
 name: kaya
-description: "Kaya - Local-first bookmarking and notes app"
+description: "Save Button - Local-first bookmarking and notes app"
 publish_to: "none"
 version: 1.0.0+1
 
@@ -79,5 +79,5 @@ flutter_launcher_icons:
   ios: true
   android: true
   min_sdk_android: 21
-  adaptive_icon_background: "#f5e6c8"
+  adaptive_icon_background: "#FFD700"
   adaptive_icon_foreground: "doc/design/icon_1024.png"

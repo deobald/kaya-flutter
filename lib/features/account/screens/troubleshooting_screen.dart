@@ -284,7 +284,7 @@ class _TroubleshootingScreenState extends ConsumerState<TroubleshootingScreen> {
       scheme: 'mailto',
       path: 'steven+kaya@deobald.ca',
       queryParameters: {
-        'subject': 'Kaya App Logs',
+        'subject': 'Save Button App Logs',
         'body':
             'Please find the attached log file.\n\n'
             'Device: ${Platform.operatingSystem}\n'
@@ -296,14 +296,14 @@ class _TroubleshootingScreenState extends ConsumerState<TroubleshootingScreen> {
       // First share the file, then open email
       await Share.shareXFiles(
         [XFile(logFile.path)],
-        subject: 'Kaya App Logs',
-        text: 'Log file for Kaya app troubleshooting',
+        subject: 'Save Button App Logs',
+        text: 'Log file for Save Button app troubleshooting',
       );
     } else {
       // Fallback to just sharing the file
       await Share.shareXFiles([
         XFile(logFile.path),
-      ], subject: 'Kaya App Logs - Send to steven+kaya@deobald.ca');
+      ], subject: 'Save Button App Logs - Send to steven+kaya@deobald.ca');
     }
   }
 }

@@ -93,7 +93,7 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
             TextField(
               controller: _serverController,
               decoration: const InputDecoration(
-                labelText: 'Kaya Server',
+                labelText: 'Save Button Server',
                 hintText: 'https://kaya.town',
                 border: OutlineInputBorder(),
               ),
