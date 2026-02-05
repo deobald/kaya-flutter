@@ -19,6 +19,8 @@ Use both model objects and service objects to organize the majority of code, kee
 
 The Flutter app should rely on a simple test suite that tests the application's behaviour through model objects, as much as possible. Include happy path tests and common edge cases when testing service objects.
 
+Whenever adding a new feature or fixing a bug, **always write tests first.**
+
 ### Logging
 
 Uses the `logger` package. Log to both STDOUT and a log file, for ease of debugging in development and in release. Log when any significant event occurs. This includes human-triggered messages from the frontend, errors, non-empty file sync events, and so on.
