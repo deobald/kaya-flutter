@@ -1,4 +1,4 @@
-package ca.deobald.kaya
+package com.savebutton.app
 
 import io.flutter.embedding.android.FlutterActivity
 
