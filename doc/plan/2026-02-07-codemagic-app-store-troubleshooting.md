@@ -4,12 +4,54 @@
 
 Setting up Codemagic CI/CD (`codemagic.yaml`) for the kaya-flutter project to deploy to the Apple App Store via TestFlight. The Android build is temporarily disabled (commented out in yaml) to speed up debugging the iOS build.
 
-- Bundle ID: `org.savebutton.app`
-- Share Extension Bundle ID: `org.savebutton.app.ShareExtension`
+### Identifiers and Credentials
+
+- Bundle ID: `org.savebutton.app` (resource ID: `7JG5QFWQR3`)
+- Share Extension Bundle ID: `org.savebutton.app.ShareExtension` (resource ID: `6X73P9W7PZ`)
+- App Group container: `group.org.savebutton.app`
 - Team ID: `FDPGS97G76` (SaveButton / steven@savebutton.com)
 - App Store Connect Issuer ID: `99e41df6-9f30-4c6c-9d39-fe4b9c7f8070`
 - Key ID: `F3KU786844`
+- `.p8` key file: `~/Downloads/AuthKey_F3KU786844.p8`
 - Apple ID (app): `6758891680`
+- App Store name: "Save Button App" ("Save Button" was taken)
+
+### Codemagic UI Environment Variable Groups
+
+Secrets are stored in the Codemagic web UI (not in yaml — `Encrypted()` blocks are deprecated). Two groups:
+
+**`app_store_credentials`** (4 variables):
+- `APP_STORE_CONNECT_PRIVATE_KEY` — contents of the `.p8` file
+- `APP_STORE_CONNECT_KEY_IDENTIFIER` — `F3KU786844`
+- `APP_STORE_CONNECT_ISSUER_ID` — `99e41df6-9f30-4c6c-9d39-fe4b9c7f8070`
+- `CERTIFICATE_PRIVATE_KEY` — contents of `ios-cert-private-key.pem` (2048-bit RSA key, gitignored)
+
+**`android_credentials`** (4 variables):
+- `FCI_KEYSTORE` — base64-encoded `upload-keystore.jks`
+- `FCI_KEYSTORE_PASSWORD` — keystore password
+- `FCI_KEY_PASSWORD` — same as keystore password (JKS requirement)
+- `FCI_KEY_ALIAS` — `org.savebutton.app`
+
+### Current State of codemagic.yaml
+
+- Workflow ID: `default-workflow` (Codemagic may key on this — was briefly renamed to `ios-workflow` which broke auto-triggering)
+- Android steps: all commented out (key.properties, local.properties, Build AAB, android artifacts, android_credentials group)
+- Google Play publishing: commented out
+- iOS steps active: Get Flutter packages, Generate code, Analyze, Test, Set up iOS code signing, Build IPA
+- The standalone `Install CocoaPods` step was removed (it conflicted with `flutter build ipa`'s own pod install)
+- The Build IPA step currently includes a pre-build: `flutter build ios --no-codesign --release` before the actual `flutter build ipa`
+- Triggering: push to master
+
+### Related Plan Documents
+
+- `doc/plan/2026-02-06-codemagic-app-store-setup.md` — iOS setup checklist (mostly complete)
+- `doc/plan/2026-02-06-codemagic-google-play-setup.md` — Google Play setup (waiting on developer account verification)
+
+### Remaining Work After iOS Build Succeeds
+
+1. **TestFlight beta group:** Create "Save Button App Beta" group in App Store Connect after first successful build. Add testers: steven@savebutton.com, contact@ankursethi.com, geoff@sinfield.com, gboyer@gmail.com
+2. **Re-enable Android build:** Uncomment Android steps in `codemagic.yaml`
+3. **Google Play setup:** Complete steps in the Google Play plan document once the developer account is verified
 
 ---
 
