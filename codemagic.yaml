@@ -1,5 +1,5 @@
 workflows:
-  ios-workflow:
+  default-workflow:
     name: Save Button (iOS)
     max_build_duration: 60
     environment:
