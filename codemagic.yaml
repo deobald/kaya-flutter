@@ -57,6 +57,9 @@ workflows:
           xcode-project use-profiles
       - name: Build IPA (iOS)
         script: |
+          # Pre-build to generate Flutter.framework for Share Extension
+          flutter build ios --no-codesign --release
+          # Archive and export IPA
           flutter build ipa --release \
             --build-name=1.0.$PROJECT_BUILD_NUMBER \
             --build-number=$PROJECT_BUILD_NUMBER \
