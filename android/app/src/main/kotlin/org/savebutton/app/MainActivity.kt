@@ -1,4 +1,4 @@
-package com.savebutton.app
+package org.savebutton.app
 
 import io.flutter.embedding.android.FlutterActivity
 

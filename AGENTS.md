@@ -2,7 +2,7 @@
 
 This repository contains a local-first app for bookmarking and notes. It is a Flutter application with iOS, iPadOS, and Android (both phone and tablet) as the only intended target platforms.
 
-The app will be named "Kaya", to the user. The Bundle ID (Apple/iOS) and Package Name (Android) will be `com.savebutton.app`.
+The app will be named "Kaya", to the user. The Bundle ID (Apple/iOS) and Package Name (Android) will be `org.savebutton.app`.
 
 
 ## Tools

@@ -3,20 +3,14 @@ workflows:
     name: Save Button (Android + iOS)
     max_build_duration: 60
     environment:
+      groups:
+        - app_store_credentials
+        - android_credentials
       vars:
-        PACKAGE_NAME: "com.savebutton.app"
-        BUNDLE_ID: "com.savebutton.app"
+        PACKAGE_NAME: "org.savebutton.app"
+        BUNDLE_ID: "org.savebutton.app"
+        APP_STORE_APPLE_ID: "6758891680"
         FCI_KEYSTORE_PATH: /tmp/keystore.keystore
-        # Android signing — encrypt these in the Codemagic UI or with `codemagic-cli-tools`
-        FCI_KEYSTORE: Encrypted(...)
-        FCI_KEYSTORE_PASSWORD: Encrypted(...)
-        FCI_KEY_PASSWORD: Encrypted(...)
-        FCI_KEY_ALIAS: Encrypted(...)
-        # Apple App Store Connect
-        APP_STORE_CONNECT_ISSUER_ID: Encrypted(...)
-        APP_STORE_CONNECT_KEY_IDENTIFIER: Encrypted(...)
-        APP_STORE_CONNECT_PRIVATE_KEY: Encrypted(...)
-        CERTIFICATE_PRIVATE_KEY: Encrypted(...)
       flutter: stable
       xcode: latest
       cocoapods: default
@@ -79,13 +73,13 @@ workflows:
       email:
         recipients:
           - steven@deobald.ca
-      google_play:
-        credentials: Encrypted(...)
-        track: internal
-        submit_as_draft: true
+      # google_play:
+      #   credentials: $GCLOUD_SERVICE_ACCOUNT_CREDENTIALS
+      #   track: internal
+      #   submit_as_draft: true
       app_store_connect:
-        api_key: Encrypted(...)
-        key_id: Encrypted(...)
-        issuer_id: Encrypted(...)
+        auth: integration
         submit_to_testflight: true
         submit_to_app_store: false
+        beta_groups:
+          - Save Button App Beta
