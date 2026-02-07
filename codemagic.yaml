@@ -48,8 +48,6 @@ workflows:
       #     flutter build appbundle --release \
       #       --build-name=1.0.$PROJECT_BUILD_NUMBER \
       #       --build-number=$PROJECT_BUILD_NUMBER
-      - name: Install CocoaPods
-        script: find . -name "Podfile" -execdir pod install \;
       - name: Set up iOS code signing
         script: |
           keychain initialize
