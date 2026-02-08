@@ -4,7 +4,7 @@
 
 Complete the Codemagic CI/CD configuration for building and publishing the Save Button iOS app (bundle ID `org.savebutton.app`) to the App Store via TestFlight.
 
-## Status: COMPLETE (pending first build + TestFlight group creation)
+## Status: COMPLETE (iOS build + publish working; TestFlight group creation pending)
 
 ## What Was Done
 
@@ -42,11 +42,14 @@ Complete the Codemagic CI/CD configuration for building and publishing the Save 
 
 ### Step 7: TestFlight Beta Group
 - `codemagic.yaml` configured with beta group name `Save Button App Beta`
-- **TODO after first build**: Create the "Save Button App Beta" external testing group in App Store Connect and add these testers:
+- First successful build uploaded to App Store Connect (Build 8, 2026-02-08)
+- **TODO NOW**: Create the "Save Button App Beta" external testing group in App Store Connect and add these testers:
   - steven@savebutton.com
   - contact@ankursethi.com
   - geoff@sinfield.com
   - gboyer@gmail.com
+- To create the group: App Store Connect > Apps > Save Button App > TestFlight > External Testing > Add Group > Name: "Save Button App Beta"
+- Then add the testers above to the group and submit the build for external testing
 
 ### Step 8: .gitignore Updated
 - Added `ios-cert-private-key.pem` and `*.p8`

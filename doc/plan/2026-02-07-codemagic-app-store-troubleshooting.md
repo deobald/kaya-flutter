@@ -229,7 +229,14 @@ Key notes about `share_handler`:
 **Testing results (local, Android):**
 - All sharing types work.
 
-**Codemagic build:** Pending — push to master to trigger.
+**Codemagic build 7:** IPA built successfully. Upload to App Store Connect failed due to app icon having an alpha channel.
+
+**Codemagic build 8 (icon fix):** Stripped alpha channel from `doc/design/icon_1024.png` using ImageMagick (`convert ... -alpha remove -alpha off`), regenerated all icons via `flutter_launcher_icons`. IPA built and uploaded to App Store Connect successfully.
+
+**Status:** iOS build and publish pipeline is fully working. Next steps:
+1. Create "Save Button App Beta" TestFlight group in App Store Connect
+2. Add external testers
+3. Re-enable Android build in `codemagic.yaml`
 
 ---
 
@@ -244,3 +251,9 @@ Key notes about `share_handler`:
 4. **Share Extension + Flutter on CI:** The `receive_sharing_intent` package requires the Share Extension to import a Flutter-dependent native module. This works locally (where DerivedData may be warm) but can fail on CI where the Flutter framework hasn't been generated yet when the Share Extension compiles.
 
 5. **Codemagic Encrypted() blocks deprecated:** The standalone encryption page at codemagic.io/encrypt returns 404. Secrets must be stored as environment variable groups in the Codemagic UI, referenced in yaml via `groups:`.
+
+6. **App icon must not have alpha channel:** App Store Connect rejects uploads where the large app icon (1024x1024) has transparency or an alpha channel. Strip it with: `convert icon.png -background white -alpha remove -alpha off icon.png`
+
+7. **Share Extension CFBundleVersion:** The `$(FLUTTER_BUILD_NUMBER)` build setting is only injected into the Runner target. The Share Extension's `Info.plist` must use a hardcoded value (e.g., `1`) for `CFBundleVersion`, or iOS will reject the install with "does not have a CFBundleVersion key with a non-zero length string value".
+
+8. **Stale bundle IDs cause Share Extension conflicts:** When changing bundle IDs (e.g., `ca.deobald.kaya` to `org.savebutton.app`), old Share Extension processes can persist on the device. A clean uninstall/reinstall resolves phantom sharing failures.
