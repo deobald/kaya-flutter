@@ -162,13 +162,49 @@ The app builds locally but fails on CI — possibly due to Xcode version differe
 
 The `flutter build ios --no-codesign --release` step builds the project without code signing, which generates `Flutter.framework` and all plugin frameworks. The subsequent `flutter build ipa` should then find the headers.
 
-**Status:** Awaiting Build 6 results.
+---
 
-**Fallback options if Build 6 fails:**
-1. Pin `xcode: 15.4` in `codemagic.yaml` to avoid Xcode 16's stricter Clang dependency scanner
-2. Upgrade `receive_sharing_intent` to a newer version (current: 1.8.1)
-3. Switch to `share_handler` package (as specified in CLAUDE.md) or `flutter_sharing_intent` as an alternative
-4. Restructure the Podfile to give the Share Extension target explicit access to the Flutter framework
+## Build 6 — Same receive_sharing_intent error (pre-build didn't help)
+
+**Log:** `tmp/2026-02-07-6-ipa-build-failure.txt`
+
+**Error:** Identical to Build 4/5. Both the pre-build (`flutter build ios --no-codesign`) and the archive (`flutter build ipa`) fail with the same error.
+
+**Root cause (confirmed):** The `receive_sharing_intent` podspec declares `s.dependency 'Flutter'`, which forces the Share Extension target to resolve Flutter framework headers. The Flutter pod in a Flutter project is a **placeholder** (`ios/Flutter/Flutter.podspec`) — it says `s.vendored_frameworks = 'path/to/nothing'`. The real `Flutter.framework` is injected by Flutter's build tooling into the **Runner** target only, not the Share Extension.
+
+On CI (clean build, no cached DerivedData), the Share Extension target cannot find `Flutter/Flutter.h` because:
+1. The Flutter pod is a placeholder with no actual framework
+2. Flutter's build tooling only injects framework search paths into the Runner target
+3. `inherit! :search_paths` in the Podfile inherits CocoaPods search paths but NOT the Flutter build tooling injections
+4. Locally, this works because DerivedData from previous builds contains the resolved `Flutter.framework`
+
+This is a **fundamental architectural issue** with `receive_sharing_intent` — it cannot work on CI with a Share Extension target.
+
+**Codemagic Xcode version:** `xcode: latest` resolves to Xcode 26.2 as of Feb 2026. Xcode 15.x was deprecated and removed from Codemagic in Nov 2025, so pinning to an older version is not viable.
+
+### Options Going Forward
+
+1. **Migrate to `share_handler`** — This package provides a separate `share_handler_ios_models` pod with **zero Flutter dependency** for the Share Extension. The extension imports `share_handler_ios_models` instead of Flutter, so it never needs to resolve Flutter headers. This avoids the CI issue entirely.
+
+2. **Decouple the Share Extension from Flutter manually** — Rewrite `ShareViewController.swift` to not import any Flutter-dependent package. Use a plain `SLComposeServiceViewController` that saves shared data to App Groups UserDefaults, and have the main app poll for it.
+
+3. **Force framework search paths in Podfile** — Add explicit `FRAMEWORK_SEARCH_PATHS` for the Share Extension target in the Podfile `post_install` block. Fragile; may break across Xcode/Flutter upgrades.
+
+### Why `receive_sharing_intent` Was Chosen Over `share_handler`
+
+The project was originally implemented with `share_handler` (as specified in CLAUDE.md). The switch to `receive_sharing_intent` happened in commit `2ec8dbd` (Feb 2, 2025) with the message:
+
+> `share_handler` doesn't seem to work on Android at all.
+> https://github.com/anthropics/claude-code/issues/1475
+
+The commit timeline shows 3 days of attempting to get `share_handler` working (commits `1a85aed`, `c9b6f8b`, `e3f8e2e`), including adding comprehensive Android intent filters. When Android still didn't work, the decision was made to switch to `receive_sharing_intent`.
+
+Key notes about `share_handler`:
+- It requires a native iOS Share Extension (ShareViewController.swift, storyboard, plist) — more complex setup
+- Version used was `^0.0.21`; current is `^0.0.25` which may have fixed Android issues
+- The CLAUDE.md still references `share_handler` as the intended package (documentation drift)
+
+**Decision needed:** Whether to attempt migrating back to `share_handler` (which may have fixed Android issues in newer versions) or find another approach.
 
 ---
 
