@@ -208,6 +208,31 @@ Key notes about `share_handler`:
 
 ---
 
+## Resolution: Migrated to `share_handler`
+
+**Decision:** Migrated back to `share_handler` (v0.0.25). The Android bug that originally caused the switch to `receive_sharing_intent` appears to be fixed in newer versions.
+
+**Changes made:**
+- `pubspec.yaml`: `receive_sharing_intent: ^1.8.1` -> `share_handler: ^0.0.25`
+- `ios/Podfile`: Added `share_handler_ios_models` pod for Share Extension target (zero Flutter dependency)
+- `ios/Share Extension/ShareViewController.swift`: Imports `share_handler_ios_models`, subclasses `ShareHandlerIosViewController`
+- `ios/Share Extension/Info.plist`: Updated activation rules (SUBQUERY format), added `AppGroupId` key, fixed `CFBundleVersion` (was `$(FLUTTER_BUILD_NUMBER)` which is empty for extension targets — changed to `1`)
+- `ios/Runner/Info.plist`: Added `NSUserActivityTypes` with `INSendMessageIntent`
+- `lib/features/share/services/share_receiver_service.dart`: Rewritten for `share_handler` API (`SharedMedia`, `SharedAttachment`)
+- All deployment targets bumped from iOS 13.0 to 14.0 (`ShareHandlerIosViewController` requires 14.0+)
+
+**Testing results (local, iOS):**
+- Sharing URLs: works
+- Sharing images: works
+- Sharing text: initially appeared broken (white screen -> dismiss to home). Root cause was stale `ca.deobald.kaya.ShareExtension` processes from the old bundle ID interfering. After clean uninstall/reinstall with `org.savebutton.app`, text sharing works.
+
+**Testing results (local, Android):**
+- All sharing types work.
+
+**Codemagic build:** Pending — push to master to trigger.
+
+---
+
 ## Key Learnings
 
 1. **App Store Connect API limitations:** The API can enable capabilities on bundle IDs but cannot assign App Group containers. Container registration and assignment must be done manually in the Apple Developer portal.
