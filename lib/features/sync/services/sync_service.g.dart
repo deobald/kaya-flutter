@@ -66,7 +66,7 @@ final syncConnectionStatusNotifierProvider =
     );
 
 typedef _$SyncConnectionStatusNotifier = Notifier<SyncConnectionStatus>;
-String _$syncControllerHash() => r'14d71da80d3d8f7b7da89b4f64e3af783ac998a2';
+String _$syncControllerHash() => r'caf945e470e88215966caab74d136fa71edd8655';
 
 /// Notifier for managing sync state and scheduling.
 ///
