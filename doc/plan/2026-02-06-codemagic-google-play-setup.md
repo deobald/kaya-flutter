@@ -4,9 +4,10 @@
 
 Complete the Codemagic CI/CD configuration for building and publishing the Save Button Android app (package name `org.savebutton.app`) to Google Play.
 
-## Current State
+## Current State (as of 2026-02-08)
 
-- `codemagic.yaml` exists with Android build workflow; `google_play` publishing is commented out pending setup
+- **iOS pipeline is fully working** — see `doc/plan/2026-02-06-codemagic-app-store-setup.md` (COMPLETE) and `doc/plan/2026-02-07-codemagic-app-store-troubleshooting.md`
+- `codemagic.yaml` currently runs iOS-only. All Android build steps and `google_play` publishing are **commented out** (not removed). See the "Commented-Out Android Sections" below for exactly what to uncomment.
 - `android/app/build.gradle.kts` is configured to read signing credentials from `android/key.properties` (falls back to debug signing if absent)
 - Upload keystore generated at `upload-keystore.jks` (gitignored)
 - Credentials saved in `android-signing-credentials.txt` (gitignored):
@@ -16,6 +17,24 @@ Complete the Codemagic CI/CD configuration for building and publishing the Save 
   - SHA-256: `C5:FB:18:70:AE:4D:79:C5:37:89:DE:D8:78:84:CE:C5:F0:65:D6:8F:61:6A:7B:31:A2:C6:D4:F0:4C:DD:DC:90`
 - `.gitignore` updated to exclude `*.jks`, `*.keystore`, `android/key.properties`, `android-signing-credentials.txt`
 - Android signing secrets (`FCI_KEYSTORE`, `FCI_KEYSTORE_PASSWORD`, `FCI_KEY_PASSWORD`, `FCI_KEY_ALIAS`) already added to Codemagic UI in the `android_credentials` group
+
+### Commented-Out Android Sections in codemagic.yaml
+
+The following sections need to be uncommented in Step 5:
+
+1. **Environment groups:** `- android_credentials` (line ~6)
+2. **Environment vars:** `PACKAGE_NAME: "org.savebutton.app"` and `FCI_KEYSTORE_PATH: /tmp/keystore.keystore` (lines ~9-10)
+3. **Scripts:**
+   - `Set up key.properties (Android signing)` — decodes base64 keystore and writes key.properties
+   - `Set up local.properties` — sets flutter.sdk path
+   - `Build AAB (Android)` — runs `flutter build appbundle --release`
+4. **Artifacts:** APK, AAB, and mapping.txt paths
+5. **Publishing:** `google_play` section (credentials, track, submit_as_draft)
+
+### Related Plan Documents
+
+- `doc/plan/2026-02-06-codemagic-app-store-setup.md` — iOS setup (COMPLETE)
+- `doc/plan/2026-02-07-codemagic-app-store-troubleshooting.md` — iOS troubleshooting log with key learnings
 
 
 ## Remaining Steps

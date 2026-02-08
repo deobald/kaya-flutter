@@ -4,7 +4,7 @@
 
 Complete the Codemagic CI/CD configuration for building and publishing the Save Button iOS app (bundle ID `org.savebutton.app`) to the App Store via TestFlight.
 
-## Status: COMPLETE (iOS build + publish working; TestFlight group creation pending)
+## Status: COMPLETE
 
 ## What Was Done
 
@@ -40,16 +40,20 @@ Complete the Codemagic CI/CD configuration for building and publishing the Save 
   - Group `android_credentials`: `FCI_KEYSTORE`, `FCI_KEYSTORE_PASSWORD`, `FCI_KEY_PASSWORD`, `FCI_KEY_ALIAS`
 - `codemagic.yaml` references these groups instead of inline encrypted values
 
-### Step 7: TestFlight Beta Group
+### Step 7: TestFlight Beta Group (DONE)
 - `codemagic.yaml` configured with beta group name `Save Button App Beta`
 - First successful build uploaded to App Store Connect (Build 8, 2026-02-08)
-- **TODO NOW**: Create the "Save Button App Beta" external testing group in App Store Connect and add these testers:
+- Internal Testing group created (required before External Testing section appears)
+- External Testing group "Save Button App Beta" created with testers:
   - steven@savebutton.com
   - contact@ankursethi.com
   - geoff@sinfield.com
   - gboyer@gmail.com
-- To create the group: App Store Connect > Apps > Save Button App > TestFlight > External Testing > Add Group > Name: "Save Button App Beta"
-- Then add the testers above to the group and submit the build for external testing
+- Export compliance answered (no non-standard encryption)
+- Build submitted for Beta App Review (2026-02-08)
+- **Notes for future reference:**
+  - You must create an Internal Testing group first before the External Testing section appears in the sidebar
+  - Export compliance must be answered before builds are available for testing
 
 ### Step 8: .gitignore Updated
 - Added `ios-cert-private-key.pem` and `*.p8`

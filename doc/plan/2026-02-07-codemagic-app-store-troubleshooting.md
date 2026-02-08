@@ -32,26 +32,27 @@ Secrets are stored in the Codemagic web UI (not in yaml — `Encrypted()` blocks
 - `FCI_KEY_PASSWORD` — same as keystore password (JKS requirement)
 - `FCI_KEY_ALIAS` — `org.savebutton.app`
 
-### Current State of codemagic.yaml
+### Current State of codemagic.yaml (as of 2026-02-08)
 
-- Workflow ID: `default-workflow` (Codemagic may key on this — was briefly renamed to `ios-workflow` which broke auto-triggering)
+- Workflow ID: `default-workflow` (do not rename — it breaks auto-triggering)
 - Android steps: all commented out (key.properties, local.properties, Build AAB, android artifacts, android_credentials group)
 - Google Play publishing: commented out
 - iOS steps active: Get Flutter packages, Generate code, Analyze, Test, Set up iOS code signing, Build IPA
 - The standalone `Install CocoaPods` step was removed (it conflicted with `flutter build ipa`'s own pod install)
-- The Build IPA step currently includes a pre-build: `flutter build ios --no-codesign --release` before the actual `flutter build ipa`
+- Build IPA step: straightforward `flutter build ipa --release` (pre-build workaround removed after migrating to `share_handler`)
+- Publishing: App Store Connect (TestFlight) enabled; email notifications to steven@deobald.ca
 - Triggering: push to master
 
 ### Related Plan Documents
 
-- `doc/plan/2026-02-06-codemagic-app-store-setup.md` — iOS setup checklist (mostly complete)
-- `doc/plan/2026-02-06-codemagic-google-play-setup.md` — Google Play setup (waiting on developer account verification)
+- `doc/plan/2026-02-06-codemagic-app-store-setup.md` — iOS setup checklist (COMPLETE)
+- `doc/plan/2026-02-06-codemagic-google-play-setup.md` — Google Play setup (next — waiting on developer account verification)
 
-### Remaining Work After iOS Build Succeeds
+### Remaining Work
 
-1. **TestFlight beta group:** Create "Save Button App Beta" group in App Store Connect after first successful build. Add testers: steven@savebutton.com, contact@ankursethi.com, geoff@sinfield.com, gboyer@gmail.com
-2. **Re-enable Android build:** Uncomment Android steps in `codemagic.yaml`
-3. **Google Play setup:** Complete steps in the Google Play plan document once the developer account is verified
+1. ~~**TestFlight beta group:**~~ DONE — "Save Button App Beta" group created, testers added, build submitted for Beta App Review (2026-02-08). See `doc/plan/2026-02-06-codemagic-app-store-setup.md` Step 7.
+2. **Re-enable Android build:** Uncomment Android steps in `codemagic.yaml` (key.properties setup, local.properties, Build AAB, android artifacts, `android_credentials` group). See `doc/plan/2026-02-06-codemagic-google-play-setup.md` Step 5.
+3. **Google Play setup:** Complete Steps 1-4 (manual) and Steps 5-7 (automated) in the Google Play plan document. Prerequisite: Google Play Developer account must be verified.
 
 ---
 
