@@ -4,10 +4,9 @@
 
 Complete the Codemagic CI/CD configuration for building and publishing the Save Button Android app (package name `org.savebutton.app`) to Google Play.
 
-## Current State (as of 2026-02-08)
+## Current State (as of 2026-02-09)
 
 - **iOS pipeline is fully working** — see `doc/plan/2026-02-06-codemagic-app-store-setup.md` (COMPLETE) and `doc/plan/2026-02-07-codemagic-app-store-troubleshooting.md`
-- `codemagic.yaml` currently runs iOS-only. All Android build steps and `google_play` publishing are **commented out** (not removed). See the "Commented-Out Android Sections" below for exactly what to uncomment.
 - `android/app/build.gradle.kts` is configured to read signing credentials from `android/key.properties` (falls back to debug signing if absent)
 - Upload keystore generated at `upload-keystore.jks` (gitignored)
 - Credentials saved in `android-signing-credentials.txt` (gitignored):
@@ -17,19 +16,8 @@ Complete the Codemagic CI/CD configuration for building and publishing the Save 
   - SHA-256: `C5:FB:18:70:AE:4D:79:C5:37:89:DE:D8:78:84:CE:C5:F0:65:D6:8F:61:6A:7B:31:A2:C6:D4:F0:4C:DD:DC:90`
 - `.gitignore` updated to exclude `*.jks`, `*.keystore`, `android/key.properties`, `android-signing-credentials.txt`
 - Android signing secrets (`FCI_KEYSTORE`, `FCI_KEYSTORE_PASSWORD`, `FCI_KEY_PASSWORD`, `FCI_KEY_ALIAS`) already added to Codemagic UI in the `android_credentials` group
-
-### Commented-Out Android Sections in codemagic.yaml
-
-The following sections need to be uncommented in Step 5:
-
-1. **Environment groups:** `- android_credentials` (line ~6)
-2. **Environment vars:** `PACKAGE_NAME: "org.savebutton.app"` and `FCI_KEYSTORE_PATH: /tmp/keystore.keystore` (lines ~9-10)
-3. **Scripts:**
-   - `Set up key.properties (Android signing)` — decodes base64 keystore and writes key.properties
-   - `Set up local.properties` — sets flutter.sdk path
-   - `Build AAB (Android)` — runs `flutter build appbundle --release`
-4. **Artifacts:** APK, AAB, and mapping.txt paths
-5. **Publishing:** `google_play` section (credentials, track, submit_as_draft)
+- `GCLOUD_SERVICE_ACCOUNT_CREDENTIALS` added to Codemagic UI in the `android_credentials` group
+- **All Android sections in `codemagic.yaml` are now uncommented and active** (build, artifacts, and google_play publishing)
 
 ### Related Plan Documents
 
@@ -39,73 +27,33 @@ The following sections need to be uncommented in Step 5:
 
 ## Remaining Steps
 
-### Step 1: Create Google Cloud Project and Service Account (MANUAL - Steven)
+### Step 1: Create Google Cloud Project and Service Account (MANUAL - Steven) — COMPLETE
 
-> When resuming this plan, prompt Steven: "Have you created the Google Cloud service account and downloaded the JSON key? If not, here are the steps..."
+Google Cloud project and service account created. JSON key downloaded.
 
-1. Go to [Google Cloud Console](https://console.cloud.google.com)
-2. Create a new project named `Save Button CI` (or similar)
-3. Go to **IAM & Admin > Service Accounts**
-4. Click **Create Service Account**
-   - Name: `codemagic-ci`
-   - Click **Create and Continue**
-   - Skip the optional role/access steps, click **Done**
-5. Click on the newly created service account
-6. Go to the **Keys** tab
-7. Click **Add Key > Create new key > JSON > Create**
-8. Save the downloaded `.json` file securely
+### Step 2: Create the App in Google Play Console (MANUAL - Steven) — COMPLETE
 
-### Step 2: Create the App in Google Play Console (MANUAL - Steven)
+App listing created in Google Play Console.
 
-> When resuming this plan, prompt Steven: "Have you created the Save Button app listing in Google Play Console?"
+### Step 3: Link Service Account to Google Play Console (MANUAL - Steven) — COMPLETE
 
-1. Go to [Google Play Console](https://play.google.com/console)
-2. Click **Create app**
-3. App name: `Save Button`
-4. Default language: English
-5. App or Game: App
-6. Free or Paid: (Steven's choice)
-7. Complete the declarations and click **Create app**
+Service account email invited via **Users and permissions** in Google Play Console with app-level release permissions for Save Button.
 
-### Step 3: Link Service Account to Google Play Console (MANUAL - Steven)
+Note: The original plan referenced **Settings > API access**, but the current Play Console UI uses **Users and permissions > Invite new users** instead.
 
-> When resuming this plan, prompt Steven: "Have you linked the Google Cloud service account to Google Play Console?"
+### Step 4: Add Google Play Credentials to Codemagic UI (MANUAL - Steven) — COMPLETE
 
-1. In Google Play Console, go to **Settings** (gear icon) > **API access**
-2. Link the Google Cloud project created in Step 1
-3. Find the `codemagic-ci` service account in the list
-4. Click **Manage Play Console permissions**
-5. Grant these permissions:
-   - **App access**: Select **Save Button** (or "All apps")
-   - Under **Account permissions**, enable:
-     - View app information and download bulk reports
-     - Create, edit, and delete draft apps
-     - Release apps to testing tracks
-     - Manage testing tracks and edit tester lists
-6. Click **Invite user** and confirm
+`GCLOUD_SERVICE_ACCOUNT_CREDENTIALS` added to the `android_credentials` group in Codemagic UI.
 
-### Step 4: Add Google Play Credentials to Codemagic UI (MANUAL - Steven)
+### Step 5: Uncomment Android Build and Google Play Publishing in codemagic.yaml (AUTOMATED - LLM agent) — COMPLETE
 
-> When resuming this plan, prompt Steven: "Please add the Google Play service account JSON to the Codemagic UI."
-
-1. In the Codemagic app settings, go to **Environment variables**
-2. In the `android_credentials` group (or a new `google_play_credentials` group), add:
-   - Variable name: `GCLOUD_SERVICE_ACCOUNT_CREDENTIALS`
-   - Value: paste the full contents of the service account JSON file
-   - Mark as **Secret**
-
-### Step 5: Uncomment Google Play Publishing in codemagic.yaml (AUTOMATED - LLM agent)
-
-Uncomment the `google_play` section in `codemagic.yaml`:
-
-```yaml
-      google_play:
-        credentials: $GCLOUD_SERVICE_ACCOUNT_CREDENTIALS
-        track: internal
-        submit_as_draft: true
-```
-
-If the credentials were added to a new group, also add that group to the `groups` list.
+All Android sections uncommented in `codemagic.yaml` on 2026-02-09:
+- `android_credentials` environment group
+- `PACKAGE_NAME` and `FCI_KEYSTORE_PATH` environment vars
+- Android signing (`key.properties`) and `local.properties` setup scripts
+- `Build AAB (Android)` script
+- APK, AAB, and mapping.txt artifact paths
+- `google_play` publishing section (internal track, submit as draft)
 
 ### Step 6: Upload Initial AAB to Google Play (MANUAL or AUTOMATED)
 

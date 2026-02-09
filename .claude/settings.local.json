@@ -9,7 +9,9 @@
       "WebFetch(domain:raw.githubusercontent.com)",
       "WebFetch(domain:brand.gnome.org)",
       "WebFetch(domain:docs.codemagic.io)",
-      "WebFetch(domain:blog.codemagic.io)"
+      "WebFetch(domain:blog.codemagic.io)",
+      "WebFetch(domain:support.google.com)",
+      "WebFetch(domain:developers.google.com)"
     ]
   }
 }
