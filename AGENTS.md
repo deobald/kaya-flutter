@@ -141,7 +141,7 @@ Do not include the drag-n-drop file drop target which exists in the kaya-server 
 
 If the user chooses "Account" from the hamburger menu, they are taken to the Account Screen. The Account Screen provides the user with 3 fields:
 
-* Kaya Server (default: "https://kaya.town")
+* Kaya Server (default: "https://savebutton.com")
 * Email
 * Password
 

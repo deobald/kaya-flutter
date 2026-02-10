@@ -10,7 +10,7 @@ part 'account_repository.g.dart';
 const _keyServerUrl = 'kaya_server_url';
 const _keyEmail = 'kaya_email';
 const _keyPassword = 'kaya_password';
-const _defaultServerUrl = 'https://kaya.town';
+const _defaultServerUrl = AccountSettings.defaultServerUrl;
 
 /// Repository for managing account settings and credentials.
 class AccountRepository {
@@ -82,9 +82,7 @@ Future<SharedPreferences> sharedPreferences(Ref ref) async {
 @Riverpod(keepAlive: true)
 FlutterSecureStorage secureStorage(Ref ref) {
   return const FlutterSecureStorage(
-    aOptions: AndroidOptions(
-      encryptedSharedPreferences: true,
-    ),
+    aOptions: AndroidOptions(encryptedSharedPreferences: true),
   );
 }
 

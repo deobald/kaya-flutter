@@ -17,7 +17,7 @@ final _privateConstructorUsedError = UnsupportedError(
 
 /// @nodoc
 mixin _$AccountSettings {
-  /// The Kaya server URL (default: https://kaya.town)
+  /// The Kaya server URL (default: https://savebutton.com)
   String get serverUrl => throw _privateConstructorUsedError;
 
   /// User's email for authentication
@@ -140,7 +140,7 @@ class _$AccountSettingsImpl extends _AccountSettings {
     this.hasCredentials = false,
   }) : super._();
 
-  /// The Kaya server URL (default: https://kaya.town)
+  /// The Kaya server URL (default: https://savebutton.com)
   @override
   final String serverUrl;
 
@@ -194,7 +194,7 @@ abstract class _AccountSettings extends AccountSettings {
   }) = _$AccountSettingsImpl;
   const _AccountSettings._() : super._();
 
-  /// The Kaya server URL (default: https://kaya.town)
+  /// The Kaya server URL (default: https://savebutton.com)
   @override
   String get serverUrl;
 

@@ -94,7 +94,7 @@ class SearchService {
     }
 
     // First, do a simple substring match for exact containment
-    // This handles cases like searching "town" in "https://kaya.town"
+    // This handles cases like searching "town" in "https://savebutton.com"
     for (final item in searchItems) {
       if (item.searchText.contains(queryLower)) {
         results.add(

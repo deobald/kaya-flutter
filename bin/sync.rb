@@ -18,7 +18,7 @@ require "io/console"
 require "securerandom"
 
 class KayaSync
-  DEFAULT_URL = "https://kaya.town"
+  DEFAULT_URL = "https://savebutton.com"
   KAYA_DIR = File.expand_path("~/.kaya")
   ANGA_DIR = File.join(KAYA_DIR, "anga")
   META_DIR = File.join(KAYA_DIR, "meta")

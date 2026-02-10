@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kaya/features/account/screens/troubleshooting_screen.dart';
+import 'package:kaya/features/account/models/account_settings.dart';
 import 'package:kaya/features/account/services/account_repository.dart';
 import 'package:kaya/features/sync/services/sync_service.dart';
 
@@ -94,7 +95,7 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
               controller: _serverController,
               decoration: const InputDecoration(
                 labelText: 'Save Button Server',
-                hintText: 'https://kaya.town',
+                hintText: AccountSettings.defaultServerUrl,
                 border: OutlineInputBorder(),
               ),
               keyboardType: TextInputType.url,
