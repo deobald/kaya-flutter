@@ -142,6 +142,84 @@ flutter analyze
 dart format lib test
 ```
 
+## Screenshots
+
+FYI: `bin/take-screenshots.sh` seems to be broken, but I don't have the time to debug it right now. -sd
+
+Store listing screenshots can be generated from emulators using `bin/take-screenshots.sh`. Output goes to `tmp/screenshots/`.
+
+```bash
+# Take all screenshots (Android + iOS)
+./bin/take-screenshots.sh
+
+# Android only
+./bin/take-screenshots.sh android
+
+# iOS only
+./bin/take-screenshots.sh ios
+```
+
+### Android (Google Play)
+
+Google Play requires screenshots for phone, 7-inch tablet, and 10-inch tablet. The script creates AVDs for each:
+
+| Form Factor | AVD Device   | Resolution  |
+|-------------|-------------|-------------|
+| Phone       | Pixel 4      | 1080x2280   |
+| 7" Tablet   | Nexus 7 2013 | 1200x1920   |
+| 10" Tablet  | Nexus 10     | 2560x1600   |
+
+Requires an x86_64 system image. The script installs `system-images;android-30;google_apis;x86_64` if missing.
+
+To take screenshots manually:
+
+```bash
+# Create and boot an AVD
+$ANDROID_SDK/cmdline-tools/latest/bin/avdmanager create avd --name my_avd --package "system-images;android-30;google_apis;x86_64" --device "pixel_4"
+$ANDROID_SDK/emulator/emulator -avd my_avd &
+
+# Build, install, and launch
+flutter build apk --debug
+adb install build/app/outputs/flutter-apk/app-debug.apk
+adb shell am start -n org.savebutton.app/.MainActivity
+
+# Capture
+adb exec-out screencap -p > screenshot.png
+
+# Shut down
+adb emu kill
+```
+
+### iOS (App Store)
+
+App Store requires screenshots for 6.9" iPhone (1290x2796) and 13" iPad (2064x2752). Apple auto-scales for other device sizes.
+
+| Form Factor | Simulator             | Resolution  |
+|-------------|-----------------------|-------------|
+| 6.9" iPhone | iPhone 16 Pro Max     | 1260x2736   |
+| 13" iPad    | iPad Pro 13-inch (M4) | 2064x2752   |
+
+To take screenshots manually:
+
+```bash
+# List available simulators
+xcrun simctl list devices available
+
+# Boot a simulator
+xcrun simctl boot "iPhone 16 Pro Max"
+
+# Build, install, and launch
+flutter build ios --debug --simulator
+xcrun simctl install booted build/ios/iphonesimulator/Runner.app
+xcrun simctl launch booted org.savebutton.app
+
+# Capture
+xcrun simctl io booted screenshot screenshot.png
+
+# Shut down
+xcrun simctl shutdown booted
+```
+
 ## Troubleshooting
 
 ### Gradle Lock Issues (Android)
