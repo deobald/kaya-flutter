@@ -32,7 +32,9 @@ class _PreviewScreenState extends ConsumerState<PreviewScreen> {
   final _tagsController = TextEditingController();
   final _noteController = TextEditingController();
   bool _metadataChanged = false;
+  bool _metadataInitialized = false;
   VideoPlayerController? _videoController;
+  Future<String?>? _wordsTextFuture;
 
   @override
   void dispose() {
@@ -109,8 +111,9 @@ class _PreviewScreenState extends ConsumerState<PreviewScreen> {
   }
 
   Widget _buildBookmarkContent(Anga anga) {
+    _wordsTextFuture ??= _getWordsText(anga);
     return FutureBuilder<String?>(
-      future: _getWordsText(anga),
+      future: _wordsTextFuture,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const SizedBox(
@@ -324,10 +327,11 @@ class _PreviewScreenState extends ConsumerState<PreviewScreen> {
   Widget _buildMetadataSection(Anga anga, AsyncValue<AngaMeta?> metaAsync) {
     return metaAsync.when(
       data: (meta) {
-        // Initialize controllers if not already set
-        if (!_metadataChanged) {
+        // Initialize controllers once from loaded metadata
+        if (!_metadataInitialized) {
           _tagsController.text = meta?.tags.join(', ') ?? '';
           _noteController.text = meta?.note ?? '';
+          _metadataInitialized = true;
         }
 
         return Padding(
@@ -346,7 +350,7 @@ class _PreviewScreenState extends ConsumerState<PreviewScreen> {
                   hintText: 'Enter tags separated by commas',
                   border: OutlineInputBorder(),
                 ),
-                onChanged: (_) => _metadataChanged = true,
+                onChanged: (_) => setState(() => _metadataChanged = true),
               ),
               const SizedBox(height: 16),
               TextField(
@@ -357,7 +361,7 @@ class _PreviewScreenState extends ConsumerState<PreviewScreen> {
                   border: OutlineInputBorder(),
                 ),
                 maxLines: 3,
-                onChanged: (_) => _metadataChanged = true,
+                onChanged: (_) => setState(() => _metadataChanged = true),
               ),
               const SizedBox(height: 16),
               ElevatedButton(

@@ -74,3 +74,17 @@ Read [@PLAN.md](file:///Users/steven/work/deobald/kaya-flutter/doc/plan/PLAN.md)
 ### Don't hit the API unless a cached favicon or searchable 'words' text is missing
 
 When the app syncs, it appears to request all the cached file indexes and 'words' indexes every time. This shouldn't be necessary. If the local app has a copy of a 'words' searchable text or if it already has a favicon for a given bookmark, it need not query the index again. If there was no favicon available, the local app should create a note to itself in the local cache by creating a `.nofavicon` turd file, which it can check for next time it syncs. If there is a `.nofavicon` turd file present, it shouldn't re-index that bookmark's API endpoint looking for one.
+
+## BUG: "Save Metadata" is never enabled
+
+Read [@PLAN.md](file:///Users/steven/work/deobald/kaya-flutter/doc/plan/PLAN.md) before planning and implementing.
+
+When tags and/or notes are entered into an anga's PreviewScreen, doing so should enable the "Save Metadata" button. Clicking that button should save whichever tags and/or notes are present to a new meta file according to [@adr-0003-metadata.md](file:///Users/steven/work/deobald/kaya-flutter/doc/arch/adr-0003-metadata.md).
+
+### Screen Flashing
+
+Although the fix to the above bug works, now when typing in the "Tags" or "Notes" field, the entire screen flashes. The widgets above (ex. "Visit Original Page" button) become very briefly visible as the active widget moves down the screen. This could either be because the "Save Metadata" button is disappearing momentarily or some other rendering bug.
+
+### Text Removal
+
+When the "Save Metadata" button is clicked, the text entered in the "Tags" and/or "Notes" fields should not disappear. The user should continue to see what they will see if they click the Back button and return to this (active) preview, which is the text they just entered and saved.

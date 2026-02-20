@@ -152,6 +152,100 @@ void main() {
       );
     });
 
+    group('saveMeta and loadMetaForAnga', () {
+      test('saveMeta creates a TOML file with correct content', () async {
+        const angaFilename = '2026-01-28T205208-bookmark.url';
+
+        final meta = await service.saveMeta(
+          angaFilename,
+          tags: ['podcast', 'democracy'],
+          note: 'A test note',
+        );
+
+        expect(meta.angaFilename, equals(angaFilename));
+        expect(meta.tags, equals(['podcast', 'democracy']));
+        expect(meta.note, equals('A test note'));
+
+        // Verify the file was actually written
+        final file = File(meta.path);
+        expect(await file.exists(), isTrue);
+
+        final content = await file.readAsString();
+        expect(content, contains('[anga]'));
+        expect(content, contains('filename = "$angaFilename"'));
+        expect(content, contains('[meta]'));
+        expect(content, contains('podcast'));
+        expect(content, contains('A test note'));
+      });
+
+      test('loadMetaForAnga returns null when no metadata exists', () async {
+        final result = await service.loadMetaForAnga('nonexistent.url');
+
+        expect(result, isNull);
+      });
+
+      test('loadMetaForAnga returns saved metadata', () async {
+        const angaFilename = '2026-01-28T205208-bookmark.url';
+
+        await service.saveMeta(
+          angaFilename,
+          tags: ['test'],
+          note: 'Saved note',
+        );
+
+        final loaded = await service.loadMetaForAnga(angaFilename);
+
+        expect(loaded, isNotNull);
+        expect(loaded!.angaFilename, equals(angaFilename));
+        expect(loaded.tags, equals(['test']));
+        expect(loaded.note, equals('Saved note'));
+      });
+
+      test('loadMetaForAnga returns most recent when multiple exist', () async {
+        const angaFilename = '2026-01-28T205208-bookmark.url';
+
+        // Save first metadata
+        await service.saveMeta(
+          angaFilename,
+          tags: ['old'],
+          note: 'Old note',
+        );
+
+        // Wait to ensure different timestamp
+        await Future.delayed(const Duration(milliseconds: 10));
+
+        // Save second metadata
+        await service.saveMeta(
+          angaFilename,
+          tags: ['new', 'updated'],
+          note: 'New note',
+        );
+
+        final loaded = await service.loadMetaForAnga(angaFilename);
+
+        expect(loaded, isNotNull);
+        expect(loaded!.tags, equals(['new', 'updated']));
+        expect(loaded.note, equals('New note'));
+      });
+
+      test('saveMeta with empty tags and no note', () async {
+        const angaFilename = '2026-01-28T205208-bookmark.url';
+
+        final meta = await service.saveMeta(
+          angaFilename,
+          tags: [],
+        );
+
+        expect(meta.tags, isEmpty);
+        expect(meta.note, isNull);
+
+        final loaded = await service.loadMetaForAnga(angaFilename);
+        expect(loaded, isNotNull);
+        expect(loaded!.tags, isEmpty);
+        expect(loaded.note, isNull);
+      });
+    });
+
     group('saveWordsFile and listWordsAngas', () {
       test('saveWordsFile creates directory with full anga name', () async {
         const angaName = '2026-01-27T171207-bookmark.url';
