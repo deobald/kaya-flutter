@@ -1,9 +1,7 @@
-import 'dart:io';
-
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:kaya/core/widgets/kaya_icon.dart';
 import 'package:kaya/features/account/screens/troubleshooting_screen.dart';
 import 'package:kaya/features/account/models/account_settings.dart';
 import 'package:kaya/features/account/services/account_repository.dart';
@@ -136,7 +134,7 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
                 border: const OutlineInputBorder(),
                 suffixIcon: IconButton(
                   icon: Icon(
-                    _passwordVisible ? Icons.visibility_off : Icons.visibility,
+                    _passwordVisible ? KayaIcon.visibilityOff : KayaIcon.visibility,
                   ),
                   onPressed: () {
                     setState(() {
@@ -175,9 +173,7 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
                         semanticsLabel: 'Testing connection',
                       ),
                     )
-                  : Icon(Platform.isIOS
-                        ? CupertinoIcons.arrow_2_circlepath_circle_fill
-                        : Icons.wifi_tethering),
+                  : Icon(KayaIcon.testConnection),
               label: const Text('Test Connection'),
             ),
             const SizedBox(height: 12),
@@ -194,7 +190,7 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
                         semanticsLabel: 'Syncing',
                       ),
                     )
-                  : const Icon(Icons.sync),
+                  : Icon(KayaIcon.sync),
               label: const Text('Force Sync'),
             ),
             if (syncStatus == SyncStatus.error) ...[
@@ -215,10 +211,10 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
   Widget _buildTroubleshootingSection() {
     return Card(
       child: ListTile(
-        leading: const Icon(Icons.bug_report),
+        leading: Icon(KayaIcon.bugReport),
         title: const Text('Troubleshooting'),
         subtitle: const Text('View logs and report issues'),
-        trailing: const Icon(Icons.chevron_right),
+        trailing: Icon(KayaIcon.chevronRight),
         onTap: () => context.push(TroubleshootingScreen.routePath),
       ),
     );

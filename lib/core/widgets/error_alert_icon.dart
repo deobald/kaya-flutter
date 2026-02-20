@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:kaya/core/widgets/kaya_icon.dart';
 import 'package:kaya/features/errors/screens/errors_list_screen.dart';
 import 'package:kaya/features/errors/services/error_service.dart';
 
@@ -23,8 +24,8 @@ class ErrorAlertIcon extends ConsumerWidget {
       },
       icon: Badge(
         label: Text(errorCount.toString()),
-        child: const Icon(
-          Icons.warning_amber_rounded,
+        child: Icon(
+          KayaIcon.warningAmber,
           color: Colors.orange,
           semanticLabel: 'View errors and warnings',
         ),

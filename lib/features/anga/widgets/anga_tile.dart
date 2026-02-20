@@ -1,9 +1,9 @@
 import 'dart:io';
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:kaya/core/widgets/kaya_icon.dart';
 import 'package:kaya/features/anga/models/anga.dart';
 import 'package:kaya/features/anga/models/anga_type.dart';
 import 'package:kaya/features/anga/services/file_storage_service.dart';
@@ -94,7 +94,7 @@ class AngaTile extends ConsumerWidget {
 
   Widget _defaultBookmarkIcon(BuildContext context) {
     return Icon(
-      Platform.isIOS ? CupertinoIcons.bookmark_fill : Icons.bookmark,
+      KayaIcon.bookmark,
       size: 48,
       color: Theme.of(context).colorScheme.primary,
       semanticLabel: 'Bookmark',
@@ -151,7 +151,7 @@ class AngaTile extends ConsumerWidget {
             color: Theme.of(context).colorScheme.surfaceContainerHighest,
           ),
           Icon(
-            Icons.play_circle_outline,
+            KayaIcon.playCircle,
             size: 48,
             color: Theme.of(context).colorScheme.primary,
             semanticLabel: 'Video file',
@@ -166,13 +166,13 @@ class AngaTile extends ConsumerWidget {
   Widget _buildFileIcon(BuildContext context) {
     IconData icon;
     if (anga.isPdf) {
-      icon = Platform.isIOS ? CupertinoIcons.doc_richtext : Icons.picture_as_pdf;
+      icon = KayaIcon.pdf;
     } else if (anga.isVideo) {
-      icon = Icons.video_file;
+      icon = KayaIcon.video;
     } else if (anga.isImage) {
-      icon = Icons.image;
+      icon = KayaIcon.image;
     } else {
-      icon = Icons.insert_drive_file;
+      icon = KayaIcon.file;
     }
 
     return Container(

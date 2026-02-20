@@ -105,7 +105,7 @@ On iOS, the user should see familiar iOS-native icons whenever possible. Specifi
 * "PDF" => `doc_richtext`
 * "Everything" => `home`
 * "Account" => `profile_circled`
-* "Test Connection" => `arrow_2_circlepath_circle_fill`
+* "Force Sync" => `arrow_2_squarepath`
 
 ### Refactor to KayaIcon
 

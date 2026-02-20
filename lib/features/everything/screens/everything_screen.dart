@@ -1,12 +1,11 @@
 import 'dart:async';
-import 'dart:io';
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:kaya/core/widgets/cloud_status_icon.dart';
 import 'package:kaya/core/widgets/error_alert_icon.dart';
+import 'package:kaya/core/widgets/kaya_icon.dart';
 import 'package:kaya/features/account/screens/account_screen.dart';
 import 'package:kaya/features/anga/services/anga_repository.dart';
 import 'package:kaya/features/anga/widgets/anga_tile.dart';
@@ -52,7 +51,7 @@ class _EverythingScreenState extends ConsumerState<EverythingScreen> {
       appBar: AppBar(
         leading: Builder(
           builder: (context) => IconButton(
-            icon: const Icon(Icons.menu),
+            icon: Icon(KayaIcon.menu),
             onPressed: () => Scaffold.of(context).openDrawer(),
             tooltip: 'Menu',
           ),
@@ -62,9 +61,7 @@ class _EverythingScreenState extends ConsumerState<EverythingScreen> {
           const ErrorAlertIcon(),
           const CloudStatusIcon(),
           IconButton(
-            icon: Icon(Platform.isIOS
-                ? CupertinoIcons.add_circled_solid
-                : Icons.add),
+            icon: Icon(KayaIcon.add),
             onPressed: () => context.push(AddScreen.routePath),
             tooltip: 'Add bookmark or note',
           ),
@@ -110,9 +107,7 @@ class _EverythingScreenState extends ConsumerState<EverythingScreen> {
               ),
             ),
             ListTile(
-              leading: Icon(Platform.isIOS
-                  ? CupertinoIcons.home
-                  : Icons.home),
+              leading: Icon(KayaIcon.home),
               title: const Text('Everything'),
               selected: true,
               onTap: () {
@@ -120,9 +115,7 @@ class _EverythingScreenState extends ConsumerState<EverythingScreen> {
               },
             ),
             ListTile(
-              leading: Icon(Platform.isIOS
-                  ? CupertinoIcons.profile_circled
-                  : Icons.account_circle),
+              leading: Icon(KayaIcon.account),
               title: const Text('Account'),
               onTap: () {
                 Navigator.pop(context);
@@ -143,12 +136,10 @@ class _EverythingScreenState extends ConsumerState<EverythingScreen> {
         onChanged: _onSearchChanged,
         decoration: InputDecoration(
           hintText: 'Search...',
-          prefixIcon: Icon(Platform.isIOS
-              ? CupertinoIcons.search
-              : Icons.search),
+          prefixIcon: Icon(KayaIcon.search),
           suffixIcon: _searchQuery.isNotEmpty
               ? IconButton(
-                  icon: const Icon(Icons.clear),
+                  icon: Icon(KayaIcon.clear),
                   onPressed: () {
                     _searchController.clear();
                     setState(() {
@@ -208,7 +199,7 @@ class _EverythingScreenState extends ConsumerState<EverythingScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.error_outline, size: 48),
+            Icon(KayaIcon.errorOutline, size: 48),
             const SizedBox(height: 16),
             Text('Error loading content: $error'),
             const SizedBox(height: 16),
@@ -247,7 +238,7 @@ class _EverythingScreenState extends ConsumerState<EverythingScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.search_off, size: 64),
+            Icon(KayaIcon.searchOff, size: 64),
             const SizedBox(height: 16),
             Text(
               'No results found for "$_searchQuery"',
@@ -263,7 +254,7 @@ class _EverythingScreenState extends ConsumerState<EverythingScreen> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(
-            Icons.bookmark_border,
+            KayaIcon.bookmarkBorder,
             size: 64,
             color: Theme.of(context).colorScheme.primary,
           ),

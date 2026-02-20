@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kaya/core/widgets/kaya_icon.dart';
 import 'package:kaya/features/sync/services/sync_service.dart';
 
 /// Shows cloud connection status icon in the app bar.
@@ -19,15 +20,15 @@ class CloudStatusIcon extends ConsumerWidget {
     String tooltip;
 
     if (syncStatus == SyncStatus.syncing) {
-      icon = Icons.cloud_sync;
+      icon = KayaIcon.cloudSync;
       color = Theme.of(context).colorScheme.primary;
       tooltip = 'Syncing...';
     } else if (connectionStatus == SyncConnectionStatus.connected) {
-      icon = Icons.cloud_done;
+      icon = KayaIcon.cloudDone;
       color = Theme.of(context).colorScheme.primary;
       tooltip = 'Connected to server';
     } else if (connectionStatus == SyncConnectionStatus.disconnected) {
-      icon = Icons.cloud_off;
+      icon = KayaIcon.cloudOff;
       color = Theme.of(context).colorScheme.outline;
       tooltip = 'Server unreachable';
     } else {

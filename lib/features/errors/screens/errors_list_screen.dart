@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kaya/core/widgets/kaya_icon.dart';
 import 'package:kaya/features/errors/models/app_error.dart';
 import 'package:kaya/features/errors/services/error_service.dart';
 
@@ -20,7 +21,7 @@ class ErrorsListScreen extends ConsumerWidget {
         actions: [
           if (errors.isNotEmpty)
             IconButton(
-              icon: const Icon(Icons.delete_sweep),
+              icon: Icon(KayaIcon.deleteSweep),
               onPressed: () {
                 ref.read(errorServiceProvider.notifier).clearAll();
               },
@@ -46,7 +47,7 @@ class ErrorsListScreen extends ConsumerWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(
-            Icons.check_circle_outline,
+            KayaIcon.checkCircleOutline,
             size: 64,
             color: Theme.of(context).colorScheme.primary,
           ),
@@ -79,12 +80,12 @@ class ErrorsListScreen extends ConsumerWidget {
         color: Colors.red,
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.only(right: 16),
-        child: const Icon(Icons.delete, color: Colors.white),
+        child: Icon(KayaIcon.delete, color: Colors.white),
       ),
       direction: DismissDirection.endToStart,
       child: ListTile(
         leading: Icon(
-          isError ? Icons.error : Icons.warning,
+          isError ? KayaIcon.error : KayaIcon.warning,
           color: isError ? Colors.red : Colors.orange,
           semanticLabel: isError ? 'Error' : 'Warning',
         ),

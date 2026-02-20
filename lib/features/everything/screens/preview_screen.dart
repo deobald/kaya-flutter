@@ -1,9 +1,9 @@
 import 'dart:io';
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_pdfview/flutter_pdfview.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kaya/core/widgets/kaya_icon.dart';
 import 'package:kaya/features/anga/models/anga.dart';
 import 'package:kaya/features/anga/models/anga_type.dart';
 import 'package:kaya/features/anga/services/anga_repository.dart';
@@ -64,16 +64,12 @@ class _PreviewScreenState extends ConsumerState<PreviewScreen> {
             title: Text(anga.displayTitle),
             actions: [
               IconButton(
-                icon: Icon(Platform.isIOS
-                    ? CupertinoIcons.share_up
-                    : Icons.share),
+                icon: Icon(KayaIcon.share),
                 onPressed: () => _shareAnga(anga),
                 tooltip: 'Share',
               ),
               IconButton(
-                icon: Icon(Platform.isIOS
-                    ? CupertinoIcons.cloud_download
-                    : Icons.download),
+                icon: Icon(KayaIcon.download),
                 onPressed: () => _downloadAnga(anga),
                 tooltip: 'Download',
               ),
@@ -155,7 +151,7 @@ class _PreviewScreenState extends ConsumerState<PreviewScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(
-                  Icons.web,
+                  KayaIcon.web,
                   size: 48,
                   color: Theme.of(context).colorScheme.primary,
                 ),
@@ -225,7 +221,7 @@ class _PreviewScreenState extends ConsumerState<PreviewScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
-              Icons.insert_drive_file,
+              KayaIcon.file,
               size: 64,
               color: Theme.of(context).colorScheme.primary,
             ),
@@ -276,8 +272,8 @@ class _PreviewScreenState extends ConsumerState<PreviewScreen> {
             IconButton(
               icon: Icon(
                 _videoController!.value.isPlaying
-                    ? Icons.pause
-                    : Icons.play_arrow,
+                    ? KayaIcon.pause
+                    : KayaIcon.play,
               ),
               onPressed: () {
                 setState(() {
@@ -321,7 +317,7 @@ class _PreviewScreenState extends ConsumerState<PreviewScreen> {
           const SizedBox(height: 8),
           ElevatedButton.icon(
             onPressed: () => _openUrl(anga.url!),
-            icon: const Icon(Icons.open_in_browser),
+            icon: Icon(KayaIcon.openInBrowser),
             label: const Text('Visit Original Page'),
           ),
         ],

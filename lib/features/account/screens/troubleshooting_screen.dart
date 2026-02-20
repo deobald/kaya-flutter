@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kaya/core/services/logger_service.dart';
+import 'package:kaya/core/widgets/kaya_icon.dart';
 import 'package:kaya/features/anga/services/file_storage_service.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -56,7 +57,7 @@ class _TroubleshootingScreenState extends ConsumerState<TroubleshootingScreen> {
         title: const Text('Troubleshooting'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh),
+            icon: Icon(KayaIcon.refresh),
             onPressed: _loadLogs,
             tooltip: 'Refresh logs',
           ),
@@ -87,7 +88,7 @@ class _TroubleshootingScreenState extends ConsumerState<TroubleshootingScreen> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(
-            Icons.description_outlined,
+            KayaIcon.descriptionOutlined,
             size: 64,
             color: Theme.of(context).colorScheme.primary,
           ),
@@ -130,7 +131,7 @@ class _TroubleshootingScreenState extends ConsumerState<TroubleshootingScreen> {
                 Expanded(
                   child: OutlinedButton.icon(
                     onPressed: _dumpWordsDebug,
-                    icon: const Icon(Icons.bug_report),
+                    icon: Icon(KayaIcon.bugReport),
                     label: const Text('Dump Words'),
                   ),
                 ),
@@ -142,7 +143,7 @@ class _TroubleshootingScreenState extends ConsumerState<TroubleshootingScreen> {
                 Expanded(
                   child: OutlinedButton.icon(
                     onPressed: _clearLogs,
-                    icon: const Icon(Icons.delete_outline),
+                    icon: Icon(KayaIcon.deleteOutline),
                     label: const Text('Clear Logs'),
                   ),
                 ),
@@ -150,7 +151,7 @@ class _TroubleshootingScreenState extends ConsumerState<TroubleshootingScreen> {
                 Expanded(
                   child: ElevatedButton.icon(
                     onPressed: _sendToDeveloper,
-                    icon: const Icon(Icons.email),
+                    icon: Icon(KayaIcon.email),
                     label: const Text('Send To Developer'),
                   ),
                 ),
