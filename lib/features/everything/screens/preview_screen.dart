@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_pdfview/flutter_pdfview.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -63,12 +64,16 @@ class _PreviewScreenState extends ConsumerState<PreviewScreen> {
             title: Text(anga.displayTitle),
             actions: [
               IconButton(
-                icon: const Icon(Icons.share),
+                icon: Icon(Platform.isIOS
+                    ? CupertinoIcons.share_up
+                    : Icons.share),
                 onPressed: () => _shareAnga(anga),
                 tooltip: 'Share',
               ),
               IconButton(
-                icon: const Icon(Icons.download),
+                icon: Icon(Platform.isIOS
+                    ? CupertinoIcons.cloud_download
+                    : Icons.download),
                 onPressed: () => _downloadAnga(anga),
                 tooltip: 'Download',
               ),

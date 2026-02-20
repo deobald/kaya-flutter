@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -172,7 +175,9 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
                         semanticsLabel: 'Testing connection',
                       ),
                     )
-                  : const Icon(Icons.wifi_tethering),
+                  : Icon(Platform.isIOS
+                        ? CupertinoIcons.arrow_2_circlepath_circle_fill
+                        : Icons.wifi_tethering),
               label: const Text('Test Connection'),
             ),
             const SizedBox(height: 12),

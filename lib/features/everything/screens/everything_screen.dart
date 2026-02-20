@@ -1,5 +1,7 @@
 import 'dart:async';
+import 'dart:io';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -60,7 +62,9 @@ class _EverythingScreenState extends ConsumerState<EverythingScreen> {
           const ErrorAlertIcon(),
           const CloudStatusIcon(),
           IconButton(
-            icon: const Icon(Icons.add),
+            icon: Icon(Platform.isIOS
+                ? CupertinoIcons.add_circled_solid
+                : Icons.add),
             onPressed: () => context.push(AddScreen.routePath),
             tooltip: 'Add bookmark or note',
           ),
@@ -106,7 +110,9 @@ class _EverythingScreenState extends ConsumerState<EverythingScreen> {
               ),
             ),
             ListTile(
-              leading: const Icon(Icons.home),
+              leading: Icon(Platform.isIOS
+                  ? CupertinoIcons.home
+                  : Icons.home),
               title: const Text('Everything'),
               selected: true,
               onTap: () {
@@ -114,7 +120,9 @@ class _EverythingScreenState extends ConsumerState<EverythingScreen> {
               },
             ),
             ListTile(
-              leading: const Icon(Icons.account_circle),
+              leading: Icon(Platform.isIOS
+                  ? CupertinoIcons.profile_circled
+                  : Icons.account_circle),
               title: const Text('Account'),
               onTap: () {
                 Navigator.pop(context);
@@ -135,7 +143,9 @@ class _EverythingScreenState extends ConsumerState<EverythingScreen> {
         onChanged: _onSearchChanged,
         decoration: InputDecoration(
           hintText: 'Search...',
-          prefixIcon: const Icon(Icons.search),
+          prefixIcon: Icon(Platform.isIOS
+              ? CupertinoIcons.search
+              : Icons.search),
           suffixIcon: _searchQuery.isNotEmpty
               ? IconButton(
                   icon: const Icon(Icons.clear),

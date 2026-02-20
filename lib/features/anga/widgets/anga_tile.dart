@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -93,7 +94,7 @@ class AngaTile extends ConsumerWidget {
 
   Widget _defaultBookmarkIcon(BuildContext context) {
     return Icon(
-      Icons.bookmark,
+      Platform.isIOS ? CupertinoIcons.bookmark_fill : Icons.bookmark,
       size: 48,
       color: Theme.of(context).colorScheme.primary,
       semanticLabel: 'Bookmark',
@@ -165,7 +166,7 @@ class AngaTile extends ConsumerWidget {
   Widget _buildFileIcon(BuildContext context) {
     IconData icon;
     if (anga.isPdf) {
-      icon = Icons.picture_as_pdf;
+      icon = Platform.isIOS ? CupertinoIcons.doc_richtext : Icons.picture_as_pdf;
     } else if (anga.isVideo) {
       icon = Icons.video_file;
     } else if (anga.isImage) {

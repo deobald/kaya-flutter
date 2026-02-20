@@ -92,3 +92,21 @@ When the "Save Metadata" button is clicked, the text entered in the "Tags" and/o
 ## BUG: Sharing a URL should share the contents, not the `.url` file
 
 Bookmarks and Notes are special (and first-class) in Kaya. Currently, notes are shared correctly, as the contents of the note. However, bookmarks are shared as a `.url` file, which most users will not expect/understand. Instead, when a URL is shared from Kaya to another application, it should be the URL text itself which is shared, not the `.url` file. Most receiving applications will understand how to interpret this and provide the user with a social preview, and so on.
+
+## BUG: Cupertino Icons not used correctly
+
+On iOS, the user should see familiar iOS-native icons whenever possible. Specifically, these icons should use their `cupertino_icons` counterparts on iOS:
+
+* "Share" => "Share" (`share_up`) 
+* "Download" => `cloud_download` 
+* "Add" => `add_circled_solid`
+* "Search" => `search` (specifically from `cupertino_icons`, as it is slightly different)
+* "Bookmark" => `bookmark_fill` (again, slightly different)
+* "PDF" => `doc_richtext`
+* "Everything" => `home`
+* "Account" => `profile_circled`
+* "Test Connection" => `arrow_2_circlepath_circle_fill`
+
+### Refactor to KayaIcon
+
+Extract the platform-specific icon behaviour into `lib/core/widgets/kaya_icon.dart` to remove the duplication of testing `Platform.isIOS` in multiple places. Ensure every icon across the application is rendered via `KayaIcon`, even if there is not an iOS-specific icon from `cupertino_icons` available. There should be no calls to `Icons` from anywhere except `KayaIcon`, and that class should have a comment declaring as much.
