@@ -145,6 +145,8 @@ class _AccountScreenState extends ConsumerState<AccountScreen> {
                 ),
               ),
               obscureText: !_passwordVisible,
+              autocorrect: false,
+              enableSuggestions: false,
               onChanged: (_) => _savePassword(),
             ),
           ],

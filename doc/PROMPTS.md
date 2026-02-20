@@ -110,3 +110,7 @@ On iOS, the user should see familiar iOS-native icons whenever possible. Specifi
 ### Refactor to KayaIcon
 
 Extract the platform-specific icon behaviour into `lib/core/widgets/kaya_icon.dart` to remove the duplication of testing `Platform.isIOS` in multiple places. Ensure every icon across the application is rendered via `KayaIcon`, even if there is not an iOS-specific icon from `cupertino_icons` available. There should be no calls to `Icons` from anywhere except `KayaIcon`, and that class should have a comment declaring as much.
+
+## BUG: The password field should not permit autocorrect
+
+The password field will require very specific handling of text, so it should not attempt to suggest spellings, autocorrect, or otherwise modify the user's entry of text. It should, however, permit the paste operation so users can enter a password from their password manager.
