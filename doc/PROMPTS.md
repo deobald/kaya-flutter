@@ -114,3 +114,7 @@ Extract the platform-specific icon behaviour into `lib/core/widgets/kaya_icon.da
 ## BUG: The password field should not permit autocorrect
 
 The password field will require very specific handling of text, so it should not attempt to suggest spellings, autocorrect, or otherwise modify the user's entry of text. It should, however, permit the paste operation so users can enter a password from their password manager.
+
+## New icon
+
+I have updated the icon to [@yellow-floppy4.svg](file:///Users/steven/work/deobald/kaya-flutter/doc/design/yellow-floppy4.svg) - use this to replace the icons for both iOS and Android throughout the project.
