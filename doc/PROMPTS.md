@@ -88,3 +88,7 @@ Although the fix to the above bug works, now when typing in the "Tags" or "Notes
 ### Text Removal
 
 When the "Save Metadata" button is clicked, the text entered in the "Tags" and/or "Notes" fields should not disappear. The user should continue to see what they will see if they click the Back button and return to this (active) preview, which is the text they just entered and saved.
+
+## BUG: Sharing a URL should share the contents, not the `.url` file
+
+Bookmarks and Notes are special (and first-class) in Kaya. Currently, notes are shared correctly, as the contents of the note. However, bookmarks are shared as a `.url` file, which most users will not expect/understand. Instead, when a URL is shared from Kaya to another application, it should be the URL text itself which is shared, not the `.url` file. Most receiving applications will understand how to interpret this and provide the user with a social preview, and so on.

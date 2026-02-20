@@ -406,7 +406,11 @@ class _PreviewScreenState extends ConsumerState<PreviewScreen> {
   }
 
   Future<void> _shareAnga(Anga anga) async {
-    await Share.shareXFiles([XFile(anga.path)]);
+    if (anga.type == AngaType.bookmark && anga.url != null) {
+      await Share.share(anga.url!);
+    } else {
+      await Share.shareXFiles([XFile(anga.path)]);
+    }
   }
 
   Future<void> _downloadAnga(Anga anga) async {
