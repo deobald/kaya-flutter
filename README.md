@@ -2,6 +2,11 @@
 
 iOS and Android apps for Kaya, the local-first bookmarking engine.
 
+## Minimum Android and iOS Versions
+
+* Android: `grep "val minSdkVersion" "$(flutter sdk-path)/packages/flutter_tools/gradle/src/main/kotlin/FlutterExtension.kt"` => 24
+* iOS: `grep '^platform' ios/Podfile` => 14
+
 ## Development Environment Setup
 
 ### Prerequisites
